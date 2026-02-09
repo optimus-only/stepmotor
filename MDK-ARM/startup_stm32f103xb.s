@@ -202,7 +202,7 @@ Default_Handler PROC
                 EXPORT  DMA1_Channel7_IRQHandler   [WEAK]
                 EXPORT  ADC1_2_IRQHandler          [WEAK]
                 EXPORT  USB_HP_CAN1_TX_IRQHandler  [WEAK]
-                EXPORT  USB_LP_CAN1_RX0_IRQHandler [WEAK]
+                EXPORT    [WEAK]
                 EXPORT  CAN1_RX1_IRQHandler        [WEAK]
                 EXPORT  CAN1_SCE_IRQHandler        [WEAK]
                 EXPORT  EXTI9_5_IRQHandler         [WEAK]

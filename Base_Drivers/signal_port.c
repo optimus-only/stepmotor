@@ -246,47 +246,7 @@ void Signal_Count_DeConfig(void)
 **/
 void Signal_Count_Capture_Goal(void)
 {
-	//读取En_Pin
-	if(SIGNAL_COUNT_READ_ENA_IO()){
-		if(sg_cut.en_inve)	sg_cut.en_valid = true;
-		else								sg_cut.en_valid = false;
-	}
-	else{
-		if(sg_cut.en_inve)	sg_cut.en_valid = false;
-		else								sg_cut.en_valid = true;
-	}
 
-	//采样(对比上次的计数值)
-	sg_cut.sampling_count_last = sg_cut.sampling_count;
-	sg_cut.sampling_count = SIGNAL_COUNT_READ_COUNT();
-	sg_cut.sampling_count_sub = sg_cut.sampling_count - sg_cut.sampling_count_last;
-	
-	//采样(缓冲输出)
-	sg_cut.interp_out = sg_cut.sampling_count_sub * sg_cut.subdivide_form;
-	
-	//(由于XDrive采用多功能数据接口,脉冲速度估计移动到位置插补器执行)
-
-//	//脉冲速度还原
-//	sg_cut.restore_speed_mut += ( (sg_cut.interp_out * CONTROL_FREQ_HZ)
-//															+ ((sg_cut.restore_speed << 5) - sg_cut.restore_speed));
-//	sg_cut.restore_speed = sg_cut.restore_speed_mut >> 5;
-//	sg_cut.restore_speed_mut = sg_cut.restore_speed_mut - (sg_cut.restore_speed << 5);
-	
-	//输出
-	if(sg_cut.en_valid){
-		signal_moreio.goal_location = sg_cut.interp_out;	//Count模式借用目标位置存放目标位置增量
-		//signal_moreio.goal_speed = 0;
-		//signal_moreio.goal_current = 0;
-		signal_moreio.goal_disable = false;
-		signal_moreio.goal_brake = false;
-	}
-	else{
-		signal_moreio.goal_location = 0;	//Count模式借用目标位置存放目标位置增量
-		//signal_moreio.goal_speed = 0;
-		//signal_moreio.goal_current = 0;
-		signal_moreio.goal_disable = true;
-		signal_moreio.goal_brake = false;
-	}
 }
 
 /**
@@ -296,15 +256,7 @@ void Signal_Count_Capture_Goal(void)
 **/
 void Signal_Count_Dir_Res(void)
 {
-	//修改定时器计数方向
-	if(sg_cut.dir_inve){
-		if(SIGNAL_COUNT_READ_DIR_IO())	SIGNAL_COUNT_DOWN();	//DIR高电平-配置为向下计数
-		else														SIGNAL_COUNT_UP();		//DIR低电平-配置为向上计数
-	}
-	else{
-		if(SIGNAL_COUNT_READ_DIR_IO())	SIGNAL_COUNT_UP();		//DIR高电平-配置为向上计数
-		else														SIGNAL_COUNT_DOWN();	//DIR低电平-配置为向下计数
-	}
+	
 }
 
 /****************************************** Signal_PWM接口 ******************************************/
@@ -523,137 +475,7 @@ void Signal_PWM_Capture_Goal(void)
 **/
 void Signal_PWM_TIM_Callback(void)
 {
-	//定时器捕获中断通道1 (上升沿中断) (必须在更新中断前执行)
-	if(__HAL_TIM_GET_FLAG(&SIGNAL_PWM_Get_HTIM, TIM_FLAG_CC1) != RESET)
-	{
-		if(__HAL_TIM_GET_IT_SOURCE(&SIGNAL_PWM_Get_HTIM, TIM_IT_CC1) !=RESET)
-		{
-			__HAL_TIM_CLEAR_IT(&SIGNAL_PWM_Get_HTIM, TIM_IT_CC1);
-			SIGNAL_PWM_Get_HTIM.Channel = HAL_TIM_ACTIVE_CHANNEL_1;
-
-			//采集上升沿数据
-			sg_pwm.period = HAL_TIM_ReadCapturedValue(&SIGNAL_PWM_Get_HTIM, TIM_CHANNEL_1) + 1;		//获取PWM周期
-			sg_pwm.count_rising = sg_pwm.count_update;																						//更新计数器镜像
-		}
-	}
-	//定时器捕获中断通道2 (下降沿中断)
-	if(__HAL_TIM_GET_FLAG(&SIGNAL_PWM_Get_HTIM, TIM_FLAG_CC2) != RESET)
-	{
-		if(__HAL_TIM_GET_IT_SOURCE(&SIGNAL_PWM_Get_HTIM, TIM_IT_CC2) !=RESET)
-		{
-			__HAL_TIM_CLEAR_IT(&SIGNAL_PWM_Get_HTIM, TIM_IT_CC2);
-			SIGNAL_PWM_Get_HTIM.Channel = HAL_TIM_ACTIVE_CHANNEL_2;
-
-			//采集下降沿数据
-			sg_pwm.h_width = HAL_TIM_ReadCapturedValue(&SIGNAL_PWM_Get_HTIM, TIM_CHANNEL_2) + 1;	//获取PWM高宽度
-			sg_pwm.count_falling = sg_pwm.count_update;																						//更新计数器镜像
-		}
-	}
-	//定时器更新中断 (更新事件中断) (由更新事件触发 | 溢出事件触发)
-	if(__HAL_TIM_GET_FLAG(&SIGNAL_PWM_Get_HTIM, TIM_FLAG_UPDATE) != RESET)
-	{
-		if(__HAL_TIM_GET_IT_SOURCE(&SIGNAL_PWM_Get_HTIM, TIM_IT_UPDATE) !=RESET)
-		{
-			__HAL_TIM_CLEAR_IT(&SIGNAL_PWM_Get_HTIM, TIM_IT_UPDATE);
-			
-			//单次PWM全高全低检测
-			if(	(sg_pwm.count_update != sg_pwm.count_rising)	//(上升沿计数器镜像,更新计数器不相等)
-			 && (sg_pwm.count_update != sg_pwm.count_falling)	//(下降沿计数器镜像,更新计数器不相等)
-			){
-				//读取PWM电平用于判定全高或全低
-				if(SIGNAL_PWM_PUL_GPIO_Port -> IDR & SIGNAL_PWM_PUL_Pin){
-					sg_pwm.whole_h_flag = true;		//置位100%标志
-					sg_pwm.whole_l_flag = false;	//清位0%标志
-				}
-				else{
-					sg_pwm.whole_h_flag = false;	//清位100%标志
-					sg_pwm.whole_l_flag = true;		//置位0%标志
-				}
-			}
-			else{	
-				sg_pwm.count_update ++;
-				sg_pwm.whole_h_flag = false;		//清位100%标志
-				sg_pwm.whole_l_flag = false;		//清位0%标志
-			}
-			
-			///提取本周期PWM
-			if(sg_pwm.whole_h_flag)	sg_pwm.h_width = 65535;
-			if(sg_pwm.whole_l_flag)	sg_pwm.h_width = 0;
-			
-			//单次PWM有效性确认
-			if(0){}
-			else if((sg_pwm.whole_h_flag))																																sg_pwm.ready_first = false;	//100%_PWM无效
-			else if((sg_pwm.whole_l_flag))																																sg_pwm.ready_first = false;	//0%_PWM无效
-			else if((sg_pwm.top_width < (65535 - 100)) && ((sg_pwm.top_width + 100) < sg_pwm.h_width))		sg_pwm.ready_first = false;	//脉宽超长
-			else if((sg_pwm.bottom_width > (0 + 100)) && ((sg_pwm.bottom_width - 100) > sg_pwm.h_width))	sg_pwm.ready_first = false;	//脉宽超短
-			else																																													sg_pwm.ready_first = true;
-			
-			//可靠的PWM有效性确认
-			if(sg_pwm.ready_first){
-				if(sg_pwm.ready_second){
-					sg_pwm.ready_third = true;
-				}
-				else{
-					sg_pwm.ready_second = true;
-					sg_pwm.ready_third = false;
-				}
-			}
-			else{
-				sg_pwm.ready_second = false;
-				sg_pwm.ready_third = false;
-			}
-			
-			//第三次采样成功时开始获取数据
-			if(sg_pwm.ready_third){
-				//提取有效PWM
-				if(sg_pwm.h_width > sg_pwm.top_width)						sg_pwm.valid_width = sg_pwm.top_width;			//大于最大取最大
-				else if(sg_pwm.h_width < sg_pwm.bottom_width)		sg_pwm.valid_width = sg_pwm.bottom_width;		//小于最小取最小
-				else																						sg_pwm.valid_width = sg_pwm.h_width;				//不大不小就合适
-
-				//提取有效目标
-				if(signal_moreio.mode == MoreIO_Mode_PWM_Location){
-					//提取目标位置
-					signal_moreio.goal_location = (int32_t)	(		(float)((int32_t)sg_pwm.valid_width  - (int32_t)sg_pwm.bottom_width)
-																										/ (float)((int32_t)sg_pwm.top_width    - (int32_t)sg_pwm.bottom_width)
-																										* (float)((int32_t)sg_pwm.top_location - (int32_t)sg_pwm.bottom_location)
-																									)
-																			+ (int32_t)	(sg_pwm.bottom_location);
-				}
-				else if(signal_moreio.mode == MoreIO_Mode_PWM_Speed){
-					//提取目标速度
-					signal_moreio.goal_speed =	(int32_t)	(	(float)((int32_t)sg_pwm.valid_width - (int32_t)sg_pwm.bottom_width)
-																								/ (float)((int32_t)sg_pwm.top_width   - (int32_t)sg_pwm.bottom_width)
-																								* (float)((int32_t)sg_pwm.top_speed   - (int32_t)sg_pwm.bottom_speed)
-																								)
-																		+ (int32_t)	(sg_pwm.bottom_speed);
-					//DIR引脚低电平--->目标速度取负值
-					if(!SIGNAL_PWM_READ_DIR_IO())
-						signal_moreio.goal_speed = -signal_moreio.goal_speed;
-				}
-				else if(signal_moreio.mode == MoreIO_Mode_PWM_Current)
-				{
-					//提取目标电流
-					signal_moreio.goal_current =	(int32_t)	(	(float)((int32_t)sg_pwm.valid_width - (int32_t)sg_pwm.bottom_width)
-																									/ (float)((int32_t)sg_pwm.top_width   - (int32_t)sg_pwm.bottom_width)
-																									* (float)((int32_t)sg_pwm.top_current - (int32_t)sg_pwm.bottom_current)
-																									)
-																			+ (int32_t)	(sg_pwm.bottom_current);
-					//DIR引脚低电平--->目标电流取负值
-					if(!SIGNAL_PWM_READ_DIR_IO())
-						signal_moreio.goal_current = -signal_moreio.goal_current;
-				}
-
-				//提取特殊目标
-				signal_moreio.goal_disable = false;
-				signal_moreio.goal_brake = false;
-			}
-			else{
-				//提取特殊目标
-				signal_moreio.goal_disable = true;
-				signal_moreio.goal_brake = false;
-			}
-		}
-	}
+	
 }
 
 /****************************************** MoreIO接口 ******************************************/

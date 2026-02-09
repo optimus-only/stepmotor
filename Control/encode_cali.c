@@ -468,8 +468,7 @@ void Calibration_Loop_Callback(void)
 		Stockpile_Flash_Data_Empty(&stockpile_quick_cali);	//清除校准区数据
 	}
 	
-	//运动配置覆盖
-	Signal_MoreIO_Capture_Goal();			//读取信号端口数据以清除校准期间采样的信号
+
 	motor_control.stall_flag = true;	//触发堵转保护,即校准后禁用运动控制
 	
 	//清理校准信号

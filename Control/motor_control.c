@@ -79,6 +79,148 @@ void Control_Cur_To_Electric(int16_t current)
 /****************************************  PID控制(速度控制)  ****************************************/
 //PID控制
 Control_PID_Typedef pid;
+AutoTune_Typedef tuner;
+// 重置参数为安全基准值
+static void Set_Safe_Baseline(void) {
+    Control_DCE_SetKP(5);  // 很软的刚度
+    Control_DCE_SetKI(0);   // 禁用积分，防止干扰
+    Control_DCE_SetKV(0);   // 禁用速度积分
+    Control_DCE_SetKD(0);  // 预设足够的阻尼
+}
+
+// 启动自动整定
+void Motor_AutoTune_Start(void) {
+    tuner.state = TUNE_INIT;
+    tuner.timer = 0;
+    tuner.is_oscillating = false;
+    
+    // 切换到位置模式
+    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+    // 确保已使能
+    Motor_Control_Write_Goal_Disable(0);
+    Motor_Control_Write_Goal_Brake(0);
+}
+
+// 主处理循环 (需在 main while(1) 中周期性调用)
+void Motor_AutoTune_Loop(void) {
+    // 如果电机由于过载或堵转停止，强制终止调试
+    if(motor_control.state == Control_State_Stall || motor_control.state == Control_State_Overload) {
+        tuner.state = TUNE_FAILED;
+    }
+
+    switch (tuner.state) {
+        case TUNE_IDLE:
+        case TUNE_COMPLETE:
+        case TUNE_FAILED:
+            return; // 不做任何事
+
+        case TUNE_INIT:
+            // 1. 初始化参数
+            Set_Safe_Baseline();
+            // 2. 记录当前位置作为起点
+            tuner.start_pos = motor_control.real_location;
+            // 3. 将软硬目标对齐，防止猛冲
+            motor_control.goal_location = tuner.start_pos;
+            motor_control.soft_location = tuner.start_pos;
+            
+            tuner.state = TUNE_MOVE_POSITIVE;
+            tuner.timer = 0;
+            break;
+
+        // --- 正向阶跃测试 ---
+        case TUNE_MOVE_POSITIVE:
+            // 发送正向阶跃指令
+            Motor_Control_Write_Goal_Location(tuner.start_pos + TUNE_STEP_AMPLITUDE);
+            // 为了测试PID本身的响应，我们需要尽量让“软目标”快速跟上“硬目标”
+            // 但在XDrive中这由Tracker决定。此处我们依赖 Tracker 产生的快速运动来测试。
+            
+            tuner.max_error = 0;
+            tuner.timer = 0;
+            tuner.state = TUNE_WAIT_STABLE_POS;
+            break;
+
+        case TUNE_WAIT_STABLE_POS:
+            tuner.timer++;
+            
+            // 记录过程中的最大误差绝对值
+            if (abs(dce.p_error) > tuner.max_error) {
+                tuner.max_error = abs(dce.p_error);
+            }
+
+            // 简单的震荡检测：如果目标速度为0了，但误差还在剧烈跳动
+            if (tuner.timer > (TUNE_WAIT_CYCLES / 2)) {
+                // 后半段检查是否稳住了
+                if (abs(dce.p_error) > 50 && abs(dce.v_error) > 50) { 
+                    tuner.is_oscillating = true;
+                }
+            }
+
+            if (tuner.timer >= TUNE_WAIT_CYCLES) {
+                tuner.state = TUNE_MOVE_NEGATIVE; // 下一步：回原点
+            }
+            break;
+
+        // --- 反向阶跃测试 ---
+        case TUNE_MOVE_NEGATIVE:
+            Motor_Control_Write_Goal_Location(tuner.start_pos); // 回到起点
+            tuner.timer = 0;
+            tuner.state = TUNE_WAIT_STABLE_NEG;
+            break;
+
+        case TUNE_WAIT_STABLE_NEG:
+            tuner.timer++;
+            // 同样记录误差（可选）
+            if (tuner.timer >= TUNE_WAIT_CYCLES) {
+                tuner.state = TUNE_EVALUATE; // 测试完成，开始评估
+            }
+            break;
+
+        // --- 核心：参数评估与调整 ---
+        case TUNE_EVALUATE:
+            // 策略：
+            // 1. 如果震荡 -> 增加 KD 或 减少 KP
+            // 2. 如果没有震荡且误差(跟随滞后)大 -> 增加 KP
+            // 3. 达到上限 -> 结束
+
+            if (tuner.is_oscillating) {
+                // 发生震荡，尝试通过增加 KD 来救
+                if (dce.kd < TUNE_MAX_KD) {
+                    uint16_t new_kd = dce.kd + 20;
+                    Control_DCE_SetKD(new_kd);
+                    // 震荡标志复位，再试一次
+                    tuner.is_oscillating = false;
+                    tuner.state = TUNE_MOVE_POSITIVE; // 重测
+                } else {
+                    // KD 已经拉满还在震荡，说明 KP 太大了，必须回调
+                    uint16_t safe_kp = (dce.kp > 20) ? (dce.kp - 20) : dce.kp;
+                    Control_DCE_SetKP(safe_kp);
+                    tuner.state = TUNE_COMPLETE; // 认为找到了极限，结束
+                }
+            } else {
+                // 运行平稳
+                if (dce.kp < TUNE_MAX_KP) {
+                    // 还没到硬件极限，尝试让系统更“硬”一点
+                    // 保存当前稳定的 KP
+                    tuner.last_kp = dce.kp; 
+                    
+                    // 增加 KP
+                    Control_DCE_SetKP(dce.kp + 20);
+                    
+                    // 同时按比例稍微增加 KD，保持阻尼比
+                    // 经验法则：KD 大约需要跟随 sqrt(KP) 增加，这里用简单线性近似
+                    if (dce.kd < TUNE_MAX_KD) {
+                        Control_DCE_SetKD(dce.kd + 10);
+                    }
+                    
+                    tuner.state = TUNE_MOVE_POSITIVE; // 继续下一轮压力测试
+                } else {
+                    // 达到设定上限
+                    tuner.state = TUNE_COMPLETE;
+                }
+            }
+            break;
+    }
+}
 
 /**
   * @brief  参数配置
@@ -158,19 +300,45 @@ void Control_PID_To_Electric(int32_t _speed)
 	if(pid.v_error < (-1024 * 1024))	pid.v_error = (-1024 * 1024);
 	//op输出
 	pid.op = ((pid.kp) * (pid.v_error));
+	
 	//oi输出
-	pid.i_mut += ((pid.ki) * (pid.v_error));
-	pid.i_dec  = (pid.i_mut >> 10);
-	pid.i_mut -= (pid.i_dec << 10);
-	pid.oi    += (pid.i_dec);
-	if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 10 );	//限制为额定电流 * 1024
-	else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
+	int32_t ki_effective= pid.ki; // 积分分离：接近目标时降低积分；
+	  if(abs(pid.v_error)<1000)
+	   { ki_effective=0; }
+	  else if(abs(motor_control.est_speed)<500)
+	   {ki_effective=pid.ki/4;	 }
+	 //积分累加
+	  if(ki_effective!=0)	 
+	   { pid.i_mut += ((pid.ki) * (pid.v_error));
+	   pid.i_dec  = (pid.i_mut >> 10);
+	   pid.i_mut -= (pid.i_dec << 10);
+	   pid.oi    += (pid.i_dec);
+	   }
+	  if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 8 );	//限制为额定电流 * 1024   暂时改为256倍
+	  else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 8));	//限制为额定电流 * 1024
 	//od输出
-	pid.od = (pid.kd) * (pid.v_error - pid.v_error_last);
+	int32_t error_diff = (pid.kd) * (pid.v_error - pid.v_error_last);
+  static int32_t filtered_diff=0; //微分滤波（一阶低通）
+	#define DIFF_FILTER_FACTOR 3
+	// 移动平均滤波
+  filtered_diff = (filtered_diff * DIFF_FILTER_FACTOR + error_diff) / (DIFF_FILTER_FACTOR + 1);
+	pid.od = pid.kd * filtered_diff;
 	//综合输出计算
 	pid.out = (pid.op + pid.oi + pid.od) >> 10;
-	if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current;
-	else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
+	  if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current; //输出限幅
+	  else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
+		 
+    if(abs(motor_control.est_speed) < 200) 
+			{   
+             pid.out = pid.out * 3 / 4;  // 零速钳制：接近零速时进一步减小输出
+    }
+      
+  #define DEADZONE_THRESHOLD 50  // 死区阈值 死区补偿：在零速附近添加死区
+    if(abs(pid.out) < DEADZONE_THRESHOLD && abs(motor_control.est_speed) < 100) {
+        pid.out = 0;
+    }
+	
+	
 	
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
@@ -590,32 +758,7 @@ void Motor_Control_Callback(void)
 		}
 	}
 
-	/************************************ 模式变更 ************************************/
-	/************************************ 模式变更 ************************************/
-	//变更
-	if(motor_control.mode_run != motor_control.mode_order)
-	{
-		motor_control.mode_run = motor_control.mode_order;
-		switch(motor_control.mode_run){
-			//测试
-			case Motor_Mode_Debug_Location:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_Debug_Speed:			Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			//停止
-			case Control_Mode_Stop:						Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			//DIG(CAN/RS485)
-			case Motor_Mode_Digital_Location:	Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_Digital_Speed:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_Digital_Current:	Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_Digital_Track:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
-			//MoreIO(PWM/PUL)
-			case Motor_Mode_PWM_Location:			Signal_MoreIO_Config(MoreIO_Mode_PWM_Location);			motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_PWM_Speed:				Signal_MoreIO_Config(MoreIO_Mode_PWM_Speed);				motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_PWM_Current:			Signal_MoreIO_Config(MoreIO_Mode_PWM_Current);			motor_control.soft_new_curve = true;	break;
-			case Motor_Mode_PULSE_Location:		Signal_MoreIO_Config(MoreIO_Mode_PULSE_Locatioon);	motor_control.soft_new_curve = true;	break;
-			//其他非法模式
-			default:	break;
-		}
-	}
+
 
 	/************************************ 硬目标提取 ************************************/
 	/************************************ 硬目标提取 ************************************/
@@ -635,18 +778,10 @@ void Motor_Control_Callback(void)
 		case Motor_Mode_PWM_Location:
 		case Motor_Mode_PWM_Speed:
 		case Motor_Mode_PWM_Current:
-			Signal_MoreIO_Capture_Goal();	//MoreIO接口获取数据
-			motor_control.goal_location	= signal_moreio.goal_location;	//提取目标位置
-			motor_control.goal_speed	  = signal_moreio.goal_speed;			//提取目标速度
-			motor_control.goal_current  = signal_moreio.goal_current;		//提取目标电流
-			motor_control.goal_disable	= signal_moreio.goal_disable;		//提取目标失能
-			motor_control.goal_brake		= signal_moreio.goal_brake;			//提取目标刹车
+			
 		break;
 		case Motor_Mode_PULSE_Location:			
-			Signal_MoreIO_Capture_Goal();	//MoreIO接口获取数据
-			motor_control.goal_location	+= signal_moreio.goal_location;	//提取目标位置(Count模式借用目标位置存放目标位置增量)
-			motor_control.goal_disable	= signal_moreio.goal_disable;		//提取目标失能
-			motor_control.goal_brake		= signal_moreio.goal_brake;			//提取目标刹车
+			
 		break;
 			//其他非法模式
 		default:	break;
@@ -870,7 +1005,9 @@ int32_t Motor_Control_AdvanceCompen(int32_t _speed)
 		else												compen = (((_speed - 2200000) *  52) >> 20) + 390;	//(2200000,390) ~ 
 		if(compen > 430)						compen = 430;
 	}
-	return compen;
+	if(_speed==0)
+		compen=0;
+	return 0;
 }
 
 

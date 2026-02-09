@@ -42,12 +42,13 @@ extern "C" {
 #include "kernel_port.h"
 
 extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
+
 
 /********** MT6816 **********/
 /********** MT6816 **********/
 /********** MT6816 **********/
 void REIN_SPI_MT6816_SPI_Init(void);    //SPI初始化(MT6816)
+
 
 /********** OLED **********/
 /********** OLED **********/

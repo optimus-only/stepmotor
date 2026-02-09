@@ -55,6 +55,8 @@ void loop(void);
 //loop_it.c
 void LoopIT_SysTick_20KHz(void);		//系统计时器修改为20KHz
 void LoopIT_Priority_Overlay(void);	//中断优先级覆盖
+void USB_LP_CAN1_RX0_IRQHandler(void);
+void PID_Adaptive_Tuning(void);
 
 #ifdef __cplusplus
 }

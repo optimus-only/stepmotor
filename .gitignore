@@ -1,18 +1,48 @@
-# Keil MDK 编译输出
-Objects/
-Listings/
-*.uvguix.*
-*.axf
-*.hex
-*.bin
-*.map
+# --- Keil MDK 编译生成的中间文件 ---
 *.o
 *.d
 *.crf
+*.lnp
+*.axf
 *.htm
+*.build_log.htm
 *.dep
-*.bak
-
-# Keil 本地配置
-*.uvoptx
+*.iex
+*.i
+*.sct
+*.map
+*.lst
+*.txt
+*.uvguix.*
+*.uvgui.*
+JLinkLog.txt
 *.scvd
+
+# --- 文件夹过滤 ---
+Listings/
+Objects/
+DebugConfig/
+RTE/
+
+# --- VS Code / Keil Assistant 插件产生的文件 ---
+.vscode/
+ipch/
+*.VC.db
+*.opendb
+
+# --- 其他临时文件 ---
+*.bak
+*.tmp
+
+
+
+# 在现有内容末尾添加以下几行
+echo "" >> .gitignore
+echo "# 其他编译输出" >> .gitignore
+echo "DebugConfig/" >> .gitignore
+echo "*.lnp" >> .gitignore
+echo "*.build_log.htm" >> .gitignore
+echo "" >> .gitignore
+echo "# 系统文件" >> .gitignore
+echo ".DS_Store" >> .gitignore
+echo "Thumbs.db" >> .gitignore

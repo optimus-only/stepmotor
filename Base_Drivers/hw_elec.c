@@ -124,6 +124,15 @@ void REIN_HW_Elec_SetBrake(void)
   */
 void REIN_HW_Elec_SetDivideElec(uint32_t divide, int32_t elec_ma)
 {
+	static int32_t last_elec_ma = 0;   
+    // 低电流平滑过渡
+    if(abs(elec_ma) < 200 && abs(last_elec_ma) < 200) {  // 200mA以下
+        // 使用滤波后的电流值
+        elec_ma = (elec_ma + last_elec_ma) / 2;
+    }
+    last_elec_ma = elec_ma;
+	
+
 	//由细分数获得数组指针
 	coil_b.conver = (divide) & (0x000003FF);								//对1024取余
 	coil_a.conver = (coil_b.conver + (256)) & (0x000003FF);	//对1024取余

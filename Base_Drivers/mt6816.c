@@ -55,6 +55,10 @@ uint16_t *Read_QuickCali_DATA = (uint16_t*)STOCKPILE_APP_CALI_ADDR;
 #define MT6816_SPI_CS_H()		(MT6816_SPI_CS_GPIO_Port -> BSRR = MT6816_SPI_CS_Pin)
 #define MT6816_SPI_CS_L()		(MT6816_SPI_CS_GPIO_Port -> BRR  = MT6816_SPI_CS_Pin)
 
+
+
+
+
 #if (MT6816_Mode == MT6816_Mode_PWM)
 /****************************** MT6816_PWM ******************************/
 /****************************** MT6816_PWM ******************************/
@@ -264,44 +268,50 @@ void REIN_MT6816_SPI_Signal_Init(void)
   * @retval NULL
 **/
 void RINE_MT6816_SPI_Get_AngleData(void)
-{
-	uint16_t data_t[2];
-	uint16_t data_r[2];
-	uint8_t h_count;
+{  
+
+       
+uint16_t data_r[2];
+uint8_t h_count;
+uint16_t data_t[2];
+
+data_t[0] = (0x80 | 0x03) << 8;
+data_t[1] = (0x80 | 0x04) << 8;
+
+for(uint8_t i=0; i<3; i++){
+	//读取SPI数据
+	MT6816_SPI_CS_L();
+	HAL_SPI_TransmitReceive(&MT6816_SPI_Get_HSPI, (uint8_t*)&data_t[0], (uint8_t*)&data_r[0], 1, HAL_MAX_DELAY);
+	MT6816_SPI_CS_H();
+	MT6816_SPI_CS_L();
+	HAL_SPI_TransmitReceive(&MT6816_SPI_Get_HSPI, (uint8_t*)&data_t[1], (uint8_t*)&data_r[1], 1, HAL_MAX_DELAY);
+	MT6816_SPI_CS_H();
+	mt6816_spi.sample_data = ((data_r[0] & 0x00FF) << 8) | (data_r[1] & 0x00FF);
 	
-	data_t[0] = (0x80 | 0x03) << 8;
-	data_t[1] = (0x80 | 0x04) << 8;
-	
-	for(uint8_t i=0; i<3; i++){
-		//读取SPI数据
-		MT6816_SPI_CS_L();
-		HAL_SPI_TransmitReceive(&MT6816_SPI_Get_HSPI, (uint8_t*)&data_t[0], (uint8_t*)&data_r[0], 1, HAL_MAX_DELAY);
-		MT6816_SPI_CS_H();
-		MT6816_SPI_CS_L();
-		HAL_SPI_TransmitReceive(&MT6816_SPI_Get_HSPI, (uint8_t*)&data_t[1], (uint8_t*)&data_r[1], 1, HAL_MAX_DELAY);
-		MT6816_SPI_CS_H();
-		mt6816_spi.sample_data = ((data_r[0] & 0x00FF) << 8) | (data_r[1] & 0x00FF);
-		
-		//奇偶校验
-		h_count = 0;
-		for(uint8_t j=0; j<16; j++){
-			if(mt6816_spi.sample_data & (0x0001 << j))
-				h_count++;
-		}
-		if(h_count & 0x01){
-			mt6816_spi.pc_flag = false;
-		}
-		else{
-			mt6816_spi.pc_flag = true;
-			break;
-		}
+	//奇偶校验
+	h_count = 0;
+	for(uint8_t j=0; j<16; j++){
+		if(mt6816_spi.sample_data & (0x0001 << j))
+			h_count++;
 	}
-	
+	if(h_count & 0x01){
+		mt6816_spi.pc_flag = false;
+	}
+	else{
+		mt6816_spi.pc_flag = true;
+		  break;
+	}
+
+  }
+  
 	if(mt6816_spi.pc_flag){
-		mt6816_spi.angle = mt6816_spi.sample_data >> 2;
-		mt6816_spi.no_mag_flag = (bool)(mt6816_spi.sample_data & (0x0001 << 1));
-	}
+	mt6816_spi.angle = mt6816_spi.sample_data >> 2;
+	mt6816_spi.no_mag_flag = (bool)(mt6816_spi.sample_data & (0x0001 << 1));
+     }
+	
+
 }
+		
 
 #endif
 
@@ -366,6 +376,7 @@ void REIN_MT6816_Get_AngleData(void)
 	#error "MT6816_Mode Invalid !!!"
 #endif
 }
+
 
 
 

@@ -132,6 +132,8 @@ extern MT6816_Typedef	mt6816;
 void REIN_MT6816_Init(void);							//MT6816初始化
 void REIN_MT6816_Get_AngleData(void);			//MT6816获取角度数据
 
+
+
 #ifdef __cplusplus
 }
 #endif

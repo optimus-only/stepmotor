@@ -45,22 +45,23 @@
 //Application_User_Core
 #include "dma.h"
 #include "adc.h"
-#include "usart.h"
+#include "can.h"
 
 //Base_Drivers
 #include "kernel_port.h"
 #include "mt6816.h"
 #include "hw_elec.h"
 
-//Control
-#include "signal_port.h"
+////Control
+//#include "signal_port.h"
 #include "motor_control.h"
 #include "encode_cali.h"
 
 //Debug
 #include "button.h"
-#include "ssd1306.h"
-#include "xdrive_ui.h"
+
+//#include "ssd1306.h"
+//#include "xdrive_ui.h"
 
 /**********************************************************************/
 /*********************    Subclock processing    **********************/
@@ -72,13 +73,44 @@ static uint32_t time_second_10ms = 0;
 static uint32_t time_second_20ms = 0;
 static uint32_t time_second_50ms = 0;
 static uint32_t time_second_100ms = 0;
+uint16_t TempAngleNow=0,TempAngleLast=0;
+CAN_TxHeaderTypeDef tx_header;
+uint32_t tx_mailbox; // 用于返回发送邮箱编号
+uint8_t tx_data[8];  // CAN帧最多承载8字节数据
+//	
+
+void PID_Adaptive_Tuning(void)
+{
+    static int32_t last_output = 0;
+    static int32_t oscillation_counter = 0;
+    
+    // 检测振荡：输出频繁正负变化
+    if(last_output * motor_control.foc_current < 0) {
+        oscillation_counter++;
+    } else {
+        oscillation_counter = 0;
+    }
+    
+    // 如果检测到振荡，自动降低增益
+    if(oscillation_counter > 10) {
+        pid.kp = pid.kp * 8 / 10;  // 降低20%
+        pid.ki = pid.ki * 5 / 10;  // 降低50%
+        pid.kd = pid.kd * 12 / 10; // 增加20%（增加阻尼）
+        
+        oscillation_counter = 0;
+       
+    }
+    
+    last_output = motor_control.foc_current;
+}
+
 
 /**
 * @brief 副时钟10ms执行
 */
 void time_second_10ms_serve(void)
 {
-
+  
 }
 
 /**
@@ -87,7 +119,8 @@ void time_second_10ms_serve(void)
 void time_second_20ms_serve(void)
 {
 	//XDrive_REINui(50Hz刷新率)
-	XDrive_REINui_Callback_ms(20);
+//	XDrive_REINui_Callback_ms(20);
+	
 }
 
 /**
@@ -104,6 +137,45 @@ void time_second_50ms_serve(void)
 void time_second_100ms_serve(void)
 {
 
+
+
+//		TempAngleNow=mt6816.angle_data;
+//		tx_data[0]=TempAngleNow;
+//		tx_data[1]=TempAngleNow>>8;
+//	  
+//		 // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
+//    for(uint8_t i=2; i<8; i++) {
+//        tx_data[i] = i;
+//    }
+//		  // 3. 调用HAL库函数发送
+//       if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
+//       
+//        // Error_Handler();
+//                                }
+
+     
+				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+	 {     
+             
+
+		    motor_control.stall_flag = false;
+		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//	      Motor_Control_Write_Goal_Speed((100 * Move_Pulse_NUM) / 60);
+			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
+		    motor_control.mode_run = Motor_Mode_Digital_Location	;
+		     // Motor_AutoTune_Start();
+		    
+			}
+     if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+    {
+			  motor_control.stall_flag = false;
+		    Motor_Control_SetMotorMode(Control_Mode_Stop);
+//	      Motor_Control_Write_Goal_Speed((0 * Move_Pulse_NUM) / 60);
+//			  Motor_Control_Write_Goal_Location(51200);
+		    motor_control.mode_run = Control_Mode_Stop	;
+			 
+      }
+	 
 }
 	
 /**
@@ -121,7 +193,7 @@ void time_second_run(void)
 * @brief 副时钟1ms时钟
 **/
 void loop_second_base_1ms(void)
-{
+{ 
 	time_1ms_count++;
 	time_second_1ms++;
 	if(!(time_second_1ms % 10))		{time_second_10ms++;		}
@@ -138,12 +210,13 @@ void loop_second_base_1ms(void)
 * This is Main LOOP
 */
 void loop(void)
-{
+{  
 	//调试工具(Debug)
 	Button_Init();				//按键初始化
-	SSD1306_Init();				//OLED初始化
-	XDrive_REINui_Init();	//UI初始化
+//	 SSD1306_Init();				//OLED初始化
+//    XDrive_REINui_Init();	//UI初始化
 	
+	GPIO_Status_Led_Init();//状态LED初始化
 	//进行关键外设初始化前等待电源稳定
 	HAL_Delay(1000);
 	
@@ -156,35 +229,41 @@ void loop(void)
 	
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化
+
 	REIN_HW_Elec_Init();	//硬件电流控制器
-	Signal_MoreIO_Init();	//MoreIO接口初始化
+
 	
 	//控制初始化(Control)
 	Calibration_Init();		//校准器初始化
 	Motor_Control_Init();	//电机控制初始化
 	
-	//通讯接口初始化
-	REIN_GPIO_Modbus_Init();	//RS485_DIR
-	REIN_UART_Modbus_Init();	//串口初始化
-	Signal_Modbus_Init();			//Modbu接口初始化
+//	MX_CAN_Init();// can通信初始化
+//	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
+//  CAN_FilterInit();
+//	// 2. 配置帧头
+//  tx_header.StdId = 0x123;          // 设置标准ID，这里以0x123为例，请根据你的协议修改
+//  tx_header.ExtId = 0;              // 标准帧下此字段无效
+//  tx_header.IDE = CAN_ID_STD;       // 帧类型：标准帧 (CAN_ID_EXT为扩展帧)
+//  tx_header.RTR = CAN_RTR_DATA;     // 帧格式：数据帧 (CAN_RTR_REMOTE为远程帧)
+//  tx_header.DLC = 8;                // 数据长度：8字节 (范围1-8)
+//	tx_header.TransmitGlobalTime = DISABLE; // 时间触发通信模式禁用
 	
 	//调整中断配置
 	LoopIT_Priority_Overlay();	//重写-中断优先级覆盖
 	LoopIT_SysTick_20KHz();			//重写-系统计时器修改为20KHz
-	
-	//启动时使用按键触发校准
-	if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-	{
-		encode_cali.trigger = true;			//触发校准
-		XDrive_REINui_ToCalibration();	//进入UI校准界面
-	}
-	
+
+//  HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);  // 使能（打开）这个中断通道
+//	HAL_CAN_Start(&hcan); // 启动CAN1
+//  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
+	HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,0);
+  motor_control.mode_run = Control_Mode_Stop	;
+	encode_cali.trigger = true;			//触发校准
+
 	//FOR Circulation
 	for(;;)
-	{
+	{		
 		major_cycle_count++;
 		time_second_run();
-
 		Calibration_Loop_Callback();							//校准器主程序回调					用于校准环节最后的数据解算
 	}
 }

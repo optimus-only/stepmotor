@@ -164,31 +164,6 @@ void REIN_GPIO_MT6816_ABZ_Init(void)
 #endif
 }
 
-/********** Modbus **********/
-/********** Modbus **********/
-/********** Modbus **********/
-/**
-  * @brief  GPIO初始化(Modbus)
-  * @param  NULL
-  * @retval NULL
-*/
-void REIN_GPIO_Modbus_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	
-#ifdef Modbus_RS485DIR_GPIO_CLK_ENABLE
-	/* GPIO Ports Clock Enable */
-	Modbus_RS485DIR_GPIO_CLK_ENABLE();		//启用RS485DIR端口时钟
-	/*Configure GPIO pin Output Level*/
-	Modbus_RS485DIR_GPIO_Port -> BRR = Modbus_RS485DIR_GPIO_Pin;	//DIR引脚启动输出低电平
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = Modbus_RS485DIR_GPIO_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;		//推挽输出
-	GPIO_InitStruct.Pull = GPIO_NOPULL;						//禁用上下拉
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;	//低速
-	HAL_GPIO_Init(Modbus_RS485DIR_GPIO_Port, &GPIO_InitStruct);
-#endif
-}
 
 /**
   * @brief  GPIO初始化(MT6816_SPI)
@@ -224,137 +199,22 @@ void REIN_GPIO_MT6816_SPI_Init(void)
 	HAL_GPIO_Init(MT6816_SPI_CS_GPIO_Port, &GPIO_InitStruct);
 }
 
-/********** OLED **********/
-/********** OLED **********/
-/********** OLED **********/
 /**
-  * @brief  GPIO初始化(OLED)
+  * @brief  GPIO初始化(Status_Led)
   * @param  NULL
   * @retval NULL
 */
-void REIN_GPIO_OLED_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	
-#ifdef OLED_SPI_CS_GPIO_CLK_ENABLE
-	/********** CS **********/
-	/*GPIO Ports Clock Enable*/
-	OLED_SPI_CS_GPIO_CLK_ENABLE();		//启用CS端口时钟
-	/*Configure GPIO pin Output Level*/
-	OLED_SPI_CS_GPIO_Port -> BRR = OLED_SPI_CS_Pin;		//CS启动输出低电平
+void GPIO_Status_Led_Init()
+{ 
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  Status_Led_GPIO_CLK_ENABLE();
+	Status_Led_GPIO_Port-> BSRR = Status_Led;	//CS引脚启动输出高电平
 	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = OLED_SPI_CS_Pin;
+	GPIO_InitStruct.Pin = Status_Led;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;		//推挽输出
 	GPIO_InitStruct.Pull = GPIO_NOPULL;						//禁用上下拉
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;	//低速
-	HAL_GPIO_Init(OLED_SPI_CS_GPIO_Port, &GPIO_InitStruct);
-#endif
-	
-	/********** RES **********/
-	/*GPIO Ports Clock Enable*/
-	OLED_SPI_RES_GPIO_CLK_ENABLE();		//启用RES端口时钟
-	/*Configure GPIO pin Output Level*/
-	OLED_SPI_RES_GPIO_Port -> BRR = OLED_SPI_RES_Pin;		//RES启动输出低电平
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = OLED_SPI_RES_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;		//推挽输出
-	GPIO_InitStruct.Pull = GPIO_NOPULL;						//禁用上下拉
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;	//低速
-	HAL_GPIO_Init(OLED_SPI_RES_GPIO_Port, &GPIO_InitStruct);
-	
-	/********** DC **********/
-	/*GPIO Ports Clock Enable*/
-	OLED_SPI_DC_GPIO_CLK_ENABLE();		//启用DC端口时钟
-	/*Configure GPIO pin Output Level*/
-	OLED_SPI_DC_GPIO_Port -> BRR = OLED_SPI_DC_Pin;			//DC启动输出低电平
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = OLED_SPI_DC_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;		//推挽输出
-	GPIO_InitStruct.Pull = GPIO_NOPULL;						//禁用上下拉
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;	//低速
-	HAL_GPIO_Init(OLED_SPI_DC_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(Status_Led_GPIO_Port, &GPIO_InitStruct);
+
 }
 
-/********** SIGNAL **********/
-/********** SIGNAL **********/
-/********** SIGNAL **********/
-/**
-  * @brief  GPIO初始化(SIGNAL_COUNT)
-  * @param  NULL
-  * @retval NULL
-*/
-void REIN_GPIO_SIGNAL_COUNT_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	
-#ifdef SIGNAL_COUNT_ENA_CLK_ENABLE
-	/*GPIO Ports Clock Enable*/
-	SIGNAL_COUNT_ENA_CLK_ENABLE();		//启用ENA端口时钟
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin =SIGNAL_COUNT_ENA_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
-	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
-	HAL_GPIO_Init(SIGNAL_COUNT_ENA_GPIO_Port, &GPIO_InitStruct);
-#endif
-	
-#ifdef SIGNAL_COUNT_DIR_CLK_ENABLE
-	/*GPIO Ports Clock Enable*/
-	SIGNAL_COUNT_DIR_CLK_ENABLE();		//启用DIR端口时钟
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = SIGNAL_COUNT_DIR_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;	//双边沿中断
-	GPIO_InitStruct.Pull = GPIO_NOPULL;									//禁用上下拉
-	HAL_GPIO_Init(SIGNAL_COUNT_DIR_GPIO_Port, &GPIO_InitStruct);
-	/*EXTI interrupt init*/
-	HAL_NVIC_EnableIRQ(SIGNAL_COUNT_DIR_Get_IRQn);	//使能DIR中断
-#endif
-}
-
-/**
-  * @brief  GPIO清理(SIGNAL_COUNT)
-  * @param  NULL
-  * @retval NULL
-*/
-void REIN_GPIO_SIGNAL_COUNT_DeInit(void)
-{
-	/*EXTI interrupt deinit*/
-	HAL_NVIC_DisableIRQ(SIGNAL_COUNT_DIR_Get_IRQn);	//失能DIR中断
-	/*Configure GPIO pins */
-	HAL_GPIO_DeInit(SIGNAL_COUNT_DIR_GPIO_Port, SIGNAL_COUNT_DIR_Pin);	//重置DIR
-	HAL_GPIO_DeInit(SIGNAL_COUNT_ENA_GPIO_Port, SIGNAL_COUNT_ENA_Pin);	//重置ENA
-}
-
-/**
-  * @brief  GPIO初始化(SIGNAL_PWM)
-  * @param  NULL
-  * @retval NULL
-*/
-void REIN_GPIO_SIGNAL_PWM_Init(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	/*GPIO Ports Clock Enable*/
-	SIGNAL_PWM_ENA_CLK_ENABLE();		//启用ENA端口时钟
-	SIGNAL_PWM_DIR_CLK_ENABLE();		//启用DIR端口时钟
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = SIGNAL_PWM_ENA_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
-	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
-	HAL_GPIO_Init(SIGNAL_PWM_ENA_GPIO_Port, &GPIO_InitStruct);
-	/*Configure GPIO pins*/
-	GPIO_InitStruct.Pin = SIGNAL_PWM_DIR_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
-	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
-	HAL_GPIO_Init(SIGNAL_PWM_DIR_GPIO_Port, &GPIO_InitStruct);
-}
-
-/**
-  * @brief  GPIO清理(SIGNAL_PWM)
-  * @param  NULL
-  * @retval NULL
-*/
-void REIN_GPIO_SIGNAL_PWM_DeInit(void)
-{
-	/*Configure GPIO pins*/
-	HAL_GPIO_DeInit(SIGNAL_PWM_DIR_GPIO_Port, SIGNAL_PWM_DIR_Pin);	//重置DIR
-	HAL_GPIO_DeInit(SIGNAL_PWM_ENA_GPIO_Port, SIGNAL_PWM_ENA_Pin);	//重置ENA
-}

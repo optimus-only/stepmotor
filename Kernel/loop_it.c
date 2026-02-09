@@ -42,8 +42,8 @@
 #include "main.h"
 
 //Application_User_Core
-#include "usart.h"
-
+//#include "usart.h"
+#include "can.h"
 //Base_Drivers
 #include "mt6816.h"
 
@@ -95,7 +95,7 @@ void SysTick_Handler(void)
 		//编码器数据采集
 		REIN_MT6816_Get_AngleData();
 		//电源数据采集
-		Power_Detection_Run();
+	  //Power_Detection_Run();
 		
 		//运动控制
 		if(encode_cali.trigger)	Calibration_Interrupt_Callback();	//校准器中断回调
@@ -131,14 +131,11 @@ void LoopIT_Priority_Overlay(void)
 	//2：任务中断
 	//3: 通讯中断
 
-	//中断号																				优先级			中断源												用途
-  HAL_NVIC_SetPriority(SIGNAL_COUNT_DIR_Get_IRQn,	0,	0);		//外部中断(SIGNAL_COUNT_DIR)		获取SIGNAL_COUNT计数器方向
-	HAL_NVIC_SetPriority(SIGNAL_PWM_Get_IRQn,				0,	0);		//定时器捕获(SIGNAL_PWM_PWM)		获取SIGNAL_PWM两个边沿计数值
-	HAL_NVIC_SetPriority(SysTick_IRQn,							2,	0);		//系统定时器										核心时钟
+		//中断号																				优先级			中断源												用途
+  
+	HAL_NVIC_SetPriority(SysTick_IRQn,							0,	0);		//系统定时器										核心时钟
 
-	HAL_NVIC_SetPriority(Modbus_UART_TX_DMA_IRQn,		3,	0);		//Modbus_TX_DMA中断							响应发送完成			
-	HAL_NVIC_SetPriority(Modbus_UART_RX_DMA_IRQn,		3,	0);		//Modbus_RX_DMA中断							响应接收完成
-	HAL_NVIC_SetPriority(Modbus_UART_IRQn,					3,	0);		//Modbus_UART中断								响应串口收发中断
+//	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn,      1,  0);
 }
 
 /**
@@ -146,13 +143,7 @@ void LoopIT_Priority_Overlay(void)
 **/
 void EXTI9_5_IRQHandler(void)
 {
-	//PA1中断
-  if(__HAL_GPIO_EXTI_GET_IT(SIGNAL_COUNT_DIR_Pin) != 0x00u){
-    __HAL_GPIO_EXTI_CLEAR_IT(SIGNAL_COUNT_DIR_Pin);
-		Signal_Count_Dir_Res();		//信号COUNT_DIR中断
-  }
 	
-	loop_it.exti7_count++;
 }
 
 /**
@@ -160,52 +151,22 @@ void EXTI9_5_IRQHandler(void)
 **/
 void TIM3_IRQHandler(void)
 {
-	//TIM3的中断标志清除由PWM处理函数识别并清除
-	Signal_PWM_TIM_Callback();	//SIGNAL_PWM采集中断回调
 	
-	loop_it.time3_count++;
+}
+
+
+// SPI1中断
+void SPI1_IRQHandler(void)
+{
+    HAL_SPI_IRQHandler(&hspi1);
 }
 
 /**
-  * @brief DMA1_Channel4_IRQHandler
-**/
-void DMA1_Channel4_IRQHandler(void)
+  * @brief This function handles CAN Message Receives.
+  */ 
+void USB_LP_CAN1_RX0_IRQHandler(void)
 {
-	//调用HAL的DMA中断处理函数,以调用串口发送函数(在uart_mixed中实例化)
-	HAL_DMA_IRQHandler(&hdma_usart1_tx);
-	
-	loop_it.dma1_ch4_count++;
-}
-
-/**
-  * @brief DMA1_Channel5_IRQHandler
-**/
-void DMA1_Channel5_IRQHandler(void)
-{
-	//调用HAL的DMA中断处理函数,以调用串口接收函数(在uart_mixed中实例化)
-	HAL_DMA_IRQHandler(&hdma_usart1_rx);
-	
-	loop_it.dma1_ch5_count++;
-}
-
-/**
-  * @brief USART1_IRQHandler
-**/
-void USART1_IRQHandler(void)
-{
-	//调用HAL的UART中断处理函数,以清理未知的中断事件
-  HAL_UART_IRQHandler(&huart1);
-	
-	//检测串口是否产生了空闲中断
-  if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
-  {
-    __HAL_UART_CLEAR_IDLEFLAG(&huart1);
-		
-		//调用串口接收函数(在uart_mixed中实例化)
-    HAL_UART_RxCpltCallback(&huart1);
-  }
-	
-	loop_it.uart1_count++;
+  HAL_CAN_IRQHandler(&hcan);
 }
 
 #elif (XDrive_Run == XDrive_REIN_Basic_H1_0)

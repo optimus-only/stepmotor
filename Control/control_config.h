@@ -50,8 +50,8 @@ extern "C" {
 #include <stdbool.h>
 
 /********************  硬件配置区  ********************/
-#define Current_Rated_Current		(3000)		//额定电流(mA)
-#define Current_Cali_Current		(2000)		//校准电流(mA)
+#define Current_Rated_Current		(2000)		//额定电流(mA)
+#define Current_Cali_Current		(1000 )		//校准电流(mA)
 
 /********************  运动参数配置区  ********************/
 #define Move_Step_NUM				((int32_t)(200))																//(使用的电机单圈步数)(每步磁场旋转90°)
@@ -61,7 +61,7 @@ extern "C" {
 #define Move_Rated_UpAcc				((int32_t)(1000 * Move_Pulse_NUM))					//(固件额定加速加速度)(1000r/ss)
 #define Move_Rated_DownAcc			((int32_t)(1000 * Move_Pulse_NUM))					//(固件额定减速加速度)(1000r/ss)
 #define Move_Rated_UpCurrentRate		((int32_t)(20 * Current_Rated_Current))	//(固件额定增流梯度)(20倍额定/s)
-#define Move_Rated_DownCurrentRate	((int32_t)(20 * Current_Rated_Current))	//(固件额定减流梯度)(20倍额定/s)
+#define Move_Rated_DownCurrentRate	((int32_t)(20* Current_Rated_Current))	//(固件额定减流梯度)(20倍额定/s)
 
 /****************************************  校准器配置区  ****************************************/
 #define CALI_Encode_Bit					((int32_t)(14))																//(编码器位宽)(14位输出精度)
