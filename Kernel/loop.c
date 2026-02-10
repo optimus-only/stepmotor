@@ -43,8 +43,8 @@
 #include "loop.h"
 
 //Application_User_Core
-#include "dma.h"
-#include "adc.h"
+//#include "dma.h"
+//#include "adc.h"
 #include "can.h"
 
 //Base_Drivers
@@ -79,30 +79,6 @@ uint32_t tx_mailbox; // 用于返回发送邮箱编号
 uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 //	
 
-void PID_Adaptive_Tuning(void)
-{
-    static int32_t last_output = 0;
-    static int32_t oscillation_counter = 0;
-    
-    // 检测振荡：输出频繁正负变化
-    if(last_output * motor_control.foc_current < 0) {
-        oscillation_counter++;
-    } else {
-        oscillation_counter = 0;
-    }
-    
-    // 如果检测到振荡，自动降低增益
-    if(oscillation_counter > 10) {
-        pid.kp = pid.kp * 8 / 10;  // 降低20%
-        pid.ki = pid.ki * 5 / 10;  // 降低50%
-        pid.kd = pid.kd * 12 / 10; // 增加20%（增加阻尼）
-        
-        oscillation_counter = 0;
-       
-    }
-    
-    last_output = motor_control.foc_current;
-}
 
 
 /**
@@ -110,7 +86,7 @@ void PID_Adaptive_Tuning(void)
 */
 void time_second_10ms_serve(void)
 {
-  
+   Motor_AutoTune_Loop();
 }
 
 /**
@@ -118,8 +94,7 @@ void time_second_10ms_serve(void)
 */
 void time_second_20ms_serve(void)
 {
-	//XDrive_REINui(50Hz刷新率)
-//	XDrive_REINui_Callback_ms(20);
+
 	
 }
 
@@ -160,10 +135,10 @@ void time_second_100ms_serve(void)
 
 		    motor_control.stall_flag = false;
 		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-//	      Motor_Control_Write_Goal_Speed((100 * Move_Pulse_NUM) / 60);
+////	      Motor_Control_Write_Goal_Speed((100 * Move_Pulse_NUM) / 60);
 			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
 		    motor_control.mode_run = Motor_Mode_Digital_Location	;
-		     // Motor_AutoTune_Start();
+//		      Motor_AutoTune_Start();
 		    
 			}
      if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
@@ -224,8 +199,8 @@ void loop(void)
 //	Slave_Reg_Init();			//校验Flash数据并配置参数
 	
 	//基本外设初始化(Base_Drivers)(LOOP直接进行)
-	REIN_DMA_Init();
-	REIN_ADC_Init();	
+//	REIN_DMA_Init();
+//	REIN_ADC_Init();	
 	
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化

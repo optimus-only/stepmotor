@@ -139,7 +139,7 @@ extern "C" {
 #define MT6816_SPI_Get_SPI								(SPI1)
 #define MT6816_SPI_Get_HSPI								(hspi1)
 #define	MT6816_SPI_AFIO_REMAP							__HAL_AFIO_REMAP_SPI1_ENABLE();	//SPI1_AFIO端口重新映射
-#define	MT6816_SPI_Prescaler							(SPI_BAUDRATEPRESCALER_4)				//SPI1_8分频_9M
+#define	MT6816_SPI_Prescaler							(SPI_BAUDRATEPRESCALER_8)				//SPI1_8分频_9M
 
 /********** Modbus **********/
 /********** Modbus **********/
