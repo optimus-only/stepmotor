@@ -97,7 +97,7 @@ void SysTick_Handler(void)
 		//电源数据采集
 	  //Power_Detection_Run();
 		
-		//运动控制
+//		//运动控制
 		if(encode_cali.trigger)	Calibration_Interrupt_Callback();	//校准器中断回调
 		else										Motor_Control_Callback();					//控制器任务回调
 		
@@ -135,7 +135,7 @@ void LoopIT_Priority_Overlay(void)
   
 	HAL_NVIC_SetPriority(SysTick_IRQn,							0,	0);		//系统定时器										核心时钟
 
-//	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn,      1,  0);
+	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn,      1,  0);
 }
 
 /**

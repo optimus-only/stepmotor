@@ -86,7 +86,7 @@ uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 */
 void time_second_10ms_serve(void)
 {
-   Motor_AutoTune_Loop();
+//   Motor_AutoTune_Loop();
 }
 
 /**
@@ -112,43 +112,40 @@ void time_second_50ms_serve(void)
 void time_second_100ms_serve(void)
 {
 
-
-
-//		TempAngleNow=mt6816.angle_data;
-//		tx_data[0]=TempAngleNow;
-//		tx_data[1]=TempAngleNow>>8;
-//	  
-//		 // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
-//    for(uint8_t i=2; i<8; i++) {
-//        tx_data[i] = i;
-//    }
-//		  // 3. 调用HAL库函数发送
-//       if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
-//       
-//        // Error_Handler();
-//                                }
-
+          TempAngleNow=mt6816.angle_data;
+		      tx_data[0]=TempAngleNow;
+		      tx_data[1]=TempAngleNow>>8;
+	  
+		       // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
+          for(uint8_t i=2; i<8; i++) {
+             tx_data[i] = i;
+        }
+		      // 3. 调用HAL库函数发送
+          if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
+       
+           // Error_Handler();
+							HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,0);
+                                } 
      
 				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
 	 {     
-             
+           
 
 		    motor_control.stall_flag = false;
 		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-////	      Motor_Control_Write_Goal_Speed((100 * Move_Pulse_NUM) / 60);
 			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
 		    motor_control.mode_run = Motor_Mode_Digital_Location	;
-//		      Motor_AutoTune_Start();
+          HAL_CAN_Start(&hcan);
+
 		    
 			}
      if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
     {
 			  motor_control.stall_flag = false;
 		    Motor_Control_SetMotorMode(Control_Mode_Stop);
-//	      Motor_Control_Write_Goal_Speed((0 * Move_Pulse_NUM) / 60);
-//			  Motor_Control_Write_Goal_Location(51200);
 		    motor_control.mode_run = Control_Mode_Stop	;
-			 
+			    HAL_CAN_Stop(&hcan);
+		
       }
 	 
 }
@@ -199,7 +196,7 @@ void loop(void)
 //	Slave_Reg_Init();			//校验Flash数据并配置参数
 	
 	//基本外设初始化(Base_Drivers)(LOOP直接进行)
-//	REIN_DMA_Init();
+	//REIN_DMA_Init();
 //	REIN_ADC_Init();	
 	
 	//基本外设初始化()
@@ -212,25 +209,24 @@ void loop(void)
 	Calibration_Init();		//校准器初始化
 	Motor_Control_Init();	//电机控制初始化
 	
-//	MX_CAN_Init();// can通信初始化
-//	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
-//  CAN_FilterInit();
-//	// 2. 配置帧头
-//  tx_header.StdId = 0x123;          // 设置标准ID，这里以0x123为例，请根据你的协议修改
-//  tx_header.ExtId = 0;              // 标准帧下此字段无效
-//  tx_header.IDE = CAN_ID_STD;       // 帧类型：标准帧 (CAN_ID_EXT为扩展帧)
-//  tx_header.RTR = CAN_RTR_DATA;     // 帧格式：数据帧 (CAN_RTR_REMOTE为远程帧)
-//  tx_header.DLC = 8;                // 数据长度：8字节 (范围1-8)
-//	tx_header.TransmitGlobalTime = DISABLE; // 时间触发通信模式禁用
+	MX_CAN_Init();// can通信初始化
+	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
+  CAN_FilterInit();
+	// 2. 配置帧头
+  tx_header.StdId = 0x123;          // 设置标准ID，这里以0x123为例，请根据你的协议修改
+  tx_header.ExtId = 0;              // 标准帧下此字段无效
+  tx_header.IDE = CAN_ID_STD;       // 帧类型：标准帧 (CAN_ID_EXT为扩展帧)
+  tx_header.RTR = CAN_RTR_DATA;     // 帧格式：数据帧 (CAN_RTR_REMOTE为远程帧)
+  tx_header.DLC = 8;                // 数据长度：8字节 (范围1-8)
+	tx_header.TransmitGlobalTime = DISABLE; // 时间触发通信模式禁用
 	
 	//调整中断配置
 	LoopIT_Priority_Overlay();	//重写-中断优先级覆盖
 	LoopIT_SysTick_20KHz();			//重写-系统计时器修改为20KHz
 
-//  HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);  // 使能（打开）这个中断通道
-//	HAL_CAN_Start(&hcan); // 启动CAN1
-//  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
-	HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,0);
+	HAL_CAN_Start(&hcan); // 启动CAN1
+  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
+
   motor_control.mode_run = Control_Mode_Stop	;
 	encode_cali.trigger = true;			//触发校准
 

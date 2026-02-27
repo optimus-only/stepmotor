@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
-
+#include "motor_control.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -89,8 +89,8 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
     __HAL_AFIO_REMAP_CAN1_2();
 
     /* CAN1 interrupt Init */
-    HAL_NVIC_SetPriority(CAN1_RX1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(CAN1_RX1_IRQn);
+    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
   /* USER CODE BEGIN CAN1_MspInit 1 */
 
   /* USER CODE END CAN1_MspInit 1 */
@@ -115,7 +115,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8|GPIO_PIN_9);
 
     /* CAN1 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
+    HAL_NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
   /* USER CODE BEGIN CAN1_MspDeInit 1 */
 
   /* USER CODE END CAN1_MspDeInit 1 */
@@ -153,20 +153,57 @@ void CAN_SendMessage(uint32_t id, uint8_t* data, uint8_t len) {
     tx_header.TransmitGlobalTime = DISABLE;
 
     if (HAL_CAN_AddTxMessage(&hcan, &tx_header, data, &tx_mailbox) != HAL_OK) {
-        // ??????
+        
     }
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-    CAN_RxHeaderTypeDef rx_header;
-    uint8_t rx_data[8];
+    CAN_RxHeaderTypeDef rxHeader;
+    uint8_t rxData[8];
 
-    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data) == HAL_OK) {
-        // ????????
-        // rx_header.StdId ???????ID
-        // rx_data ???????
-        // rx_header.DLC ?????
-			
+    
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK)
+    {
+        switch (rxHeader.StdId) 
+        {
+            case 0x10: // (Position Mode)
+            {
+                
+                int32_t goal_pos = (int32_t)(rxData[0] | (rxData[1] << 8) | (rxData[2] << 16) | (rxData[3] << 24)); 
+                motor_control.stall_flag = false;
+                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+                Motor_Control_Write_Goal_Location(motor_control.goal_location-goal_pos);
+							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+								
+							
+                break;
+            }
+
+            case 0x11: //(Speed Mode)
+            {
+                int32_t goal_spd = (int32_t)(rxData[0] | (rxData[1] << 8) | (rxData[2] << 16) | (rxData[3] << 24));             
+//              Motor_Control_SetMotorMode(Motor_Mode_Debug_Speed); 
+//              Motor_Control_Write_Goal_Speed(goal_spd);
+                break;
+            }
+
+            case 0x12: 
+            {
+                if(rxData[0] == 0) 
+                {
+                    Motor_Control_SetMotorMode(Control_Mode_Stop);
+                }
+                else if(rxData[0] == 1) 
+                {
+                    
+                    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+                    Motor_Control_Write_Goal_Location(motor_control.real_location);
+                }
+                break;
+            }
+            
+            
+        }
     }
 }
 

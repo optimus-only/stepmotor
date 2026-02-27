@@ -460,20 +460,20 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 	else if(dce.oi < (-(Current_Rated_Current << 10)))	dce.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
 	//od输出计算
 	dce.od = ((dce.kd) * (dce.v_error));
-	if(abs(dce.p_error) < 10)  //减弱微分作用
-		{ 
-        dce.od = ((dce.kd / 4) * (dce.v_error)); 
-    } else {
-        dce.od = ((dce.kd) * (dce.v_error));
-    }
+//	if(abs(dce.p_error) < 10)  //减弱微分作用
+//		{ 
+//        dce.od = ((dce.kd / 4) * (dce.v_error)); 
+//    } else {
+//        dce.od = ((dce.kd) * (dce.v_error));
+//    }
 	//综合输出计算
 	dce.out = (dce.op + dce.oi + dce.od) >> 10;
-		#define POSITION_DEADZONE 3   //添加死区
-    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
-        dce.out = 0;
-        // 可选: 清除积分项防止累积
-         dce.i_mut = 0; dce.oi = 0;
-    }
+//		#define POSITION_DEADZONE 3   //添加死区
+//    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
+//        dce.out = 0;
+//        // 可选: 清除积分项防止累积
+//         dce.i_mut = 0; dce.oi = 0;
+//    }
 	if(dce.out > 			Current_Rated_Current)		dce.out =  Current_Rated_Current;
 	else if(dce.out < -Current_Rated_Current)		dce.out = -Current_Rated_Current;
 
@@ -1017,9 +1017,8 @@ int32_t Motor_Control_AdvanceCompen(int32_t _speed)
 		else												compen = (((_speed - 2200000) *  52) >> 20) + 390;	//(2200000,390) ~ 
 		if(compen > 430)						compen = 430;
 	}
-	if(_speed==0)
-		compen=0;
-	return 0;
+	
+	return  compen;
 }
 
 

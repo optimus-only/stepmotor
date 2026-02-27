@@ -110,10 +110,10 @@ void Control_PID_To_Electric(int32_t _speed);
 /****************************************  DCE控制(位置控制)  ****************************************/
 typedef struct{
 	//配置
-	#define De_DCE_KP	5	//默认KP 200
+	#define De_DCE_KP	5//默认KP 200
 	#define De_DCE_KI	0		//默认KI 80
 	#define De_DCE_KV	0	//默认KIV 300
-	#define De_DCE_KD	2	//默认KD  250
+	#define De_DCE_KD	1	//默认KD  250
 	bool		valid_kp, valid_ki, valid_kv, valid_kd;	//参数有效标志
 	int32_t	kp, ki, kv, kd;		//参数
 	//控制参数(基本部分)
