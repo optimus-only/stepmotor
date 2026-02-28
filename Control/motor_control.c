@@ -160,45 +160,46 @@ void Control_PID_To_Electric(int32_t _speed)
 	//op输出
 	pid.op = ((pid.kp) * (pid.v_error));
 	
-	//oi输出
-	int32_t ki_effective= pid.ki; // 积分分离：接近目标时降低积分；
-	  if(abs(pid.v_error)<1000)
-	   { ki_effective=0; }
-	  else if(abs(motor_control.est_speed)<500)
-	   {ki_effective=pid.ki/4;	 }
-	 //积分累加
-	  if(ki_effective!=0)	 
-	   { pid.i_mut += ((pid.ki) * (pid.v_error));
-	   pid.i_dec  = (pid.i_mut >> 10);
-	   pid.i_mut -= (pid.i_dec << 10);
-	   pid.oi    += (pid.i_dec);
-	   }
-	  if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 8 );	//限制为额定电流 * 1024   暂时改为256倍
-	  else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 8));	//限制为额定电流 * 1024
+//	//oi输出
+//	int32_t ki_effective= pid.ki; // 积分分离：接近目标时降低积分；
+//	  if(abs(pid.v_error)<1000)
+//	   { ki_effective=0; }
+//	  else if(abs(motor_control.est_speed)<500)
+//	   {ki_effective=pid.ki/4;	 }
+//	 //积分累加
+//	  if(ki_effective!=0)	 
+//	   { pid.i_mut += ((pid.ki) * (pid.v_error));
+//	   pid.i_dec  = (pid.i_mut >> 10);
+//	   pid.i_mut -= (pid.i_dec << 10);
+//	   pid.oi    += (pid.i_dec);
+//	   }
+//	  if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 10 );	//限制为额定电流 * 1024  
+//	  else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
+//	//od输出
+//	int32_t error_diff = (pid.kd) * (pid.v_error - pid.v_error_last);
+//  static int32_t filtered_diff=0; //微分滤波（一阶低通）
+//	#define DIFF_FILTER_FACTOR 3
+//	// 移动平均滤波
+//  filtered_diff = (filtered_diff * DIFF_FILTER_FACTOR + error_diff) / (DIFF_FILTER_FACTOR + 1);
+//	pid.od = pid.kd * filtered_diff;
+//	//综合输出计算
+//	pid.out = (pid.op + pid.oi + pid.od) >> 10;
+//	  if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current; //输出限幅
+//	  else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
+		 //oi输出
+	pid.i_mut += ((pid.ki) * (pid.v_error));
+	pid.i_dec  = (pid.i_mut >> 10);
+	pid.i_mut -= (pid.i_dec << 10);
+	pid.oi    += (pid.i_dec);
+	if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 10 );	//限制为额定电流 * 1024
+	else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
 	//od输出
-	int32_t error_diff = (pid.kd) * (pid.v_error - pid.v_error_last);
-  static int32_t filtered_diff=0; //微分滤波（一阶低通）
-	#define DIFF_FILTER_FACTOR 3
-	// 移动平均滤波
-  filtered_diff = (filtered_diff * DIFF_FILTER_FACTOR + error_diff) / (DIFF_FILTER_FACTOR + 1);
-	pid.od = pid.kd * filtered_diff;
+	pid.od = (pid.kd) * (pid.v_error - pid.v_error_last);
 	//综合输出计算
 	pid.out = (pid.op + pid.oi + pid.od) >> 10;
-	  if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current; //输出限幅
-	  else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
-		 
-    if(abs(motor_control.est_speed) < 200) 
-			{   
-             pid.out = pid.out * 3 / 4;  // 零速钳制：接近零速时进一步减小输出
-    }
-      
-  #define DEADZONE_THRESHOLD 50  // 死区阈值 死区补偿：在零速附近添加死区
-    if(abs(pid.out) < DEADZONE_THRESHOLD && abs(motor_control.est_speed) < 100) {
-        pid.out = 0;
-    }
-	
-	
-	
+	if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current;
+	else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
+   
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
 	//输出FOC位置
@@ -530,6 +531,120 @@ void Motor_Control_Init(void)
 	Location_Interp_Init();		//位置插补器初始化
 }
 
+LimitFinder_Typedef limit_finder = {LIMIT_FIND_IDLE, 0, 0, 0, 0, 0};
+/**
+  * @brief  启动寻找极限过程
+  */
+void Motor_LimitFinder_Start(void)
+{
+    limit_finder.state = LIMIT_FIND_START_POS;
+    limit_finder.timer = 0;
+    
+    // 确保堵转保护开启，这是触碰限位的核心判断条件
+    Motor_Control_SetStallSwitch(true);
+    // 确保失能和刹车已关闭
+//    Motor_Control_Write_Goal_Disable(0);
+//    Motor_Control_Write_Goal_Brake(0);
+}
+
+/**
+  * @brief  寻找极限的状态机主循环 (需放在10ms副时钟内调用)
+  */
+void Motor_LimitFinder_Loop(void)
+{
+    if (limit_finder.state == LIMIT_FIND_IDLE || 
+        limit_finder.state == LIMIT_FIND_DONE || 
+        limit_finder.state == LIMIT_FIND_FAILED) {
+        return; // 未处于寻找状态，直接退出
+    }
+
+    limit_finder.timer++;
+
+    switch (limit_finder.state) {
+        // --- 1. 开始正向寻找 ---
+        case LIMIT_FIND_START_POS:
+            //Motor_Control_Clear_Stall(); // 清除之前的堵转标志
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Speed); // 切换为速度模式
+				    motor_control.mode_run = Motor_Mode_Digital_Speed	;
+            Motor_Control_Write_Goal_Speed(LIMIT_SEARCH_SPEED);   // 正转
+            limit_finder.state = LIMIT_FIND_WAIT_POS;
+            limit_finder.timer = 0;
+            break;
+
+        // --- 2. 等待正向堵转 ---
+        case LIMIT_FIND_WAIT_POS:
+            if (motor_control.stall_flag || motor_control.state == Control_State_Stall) {
+                // 发生堵转，说明撞到正向限位
+							  Motor_Control_SetMotorMode(Control_Mode_Stop);
+		            motor_control.mode_run = Control_Mode_Stop	;
+                Motor_Control_Write_Goal_Speed(0); // 立即停转
+                limit_finder.max_pos_raw = motor_control.real_location; // 记录原始极值
+                Motor_Control_Clear_Stall(); // 恢复电机状态
+                limit_finder.state = LIMIT_FIND_BACKOFF_POS;
+                limit_finder.timer = 0;
+            } else if (limit_finder.timer > 100) { // 1500 * 10ms = 15秒 超时保护
+                Motor_Control_Write_Goal_Speed(0);
+                limit_finder.state = LIMIT_FIND_FAILED;
+            }
+            break;
+
+        // --- 3. 正向回退安全距离 ---
+        case LIMIT_FIND_BACKOFF_POS:
+            if (limit_finder.timer == 10) { // 停顿100ms后开始回退
+                limit_finder.safe_max_pos = limit_finder.max_pos_raw - LIMIT_BACKOFF_DIST;
+                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); // 切换回位置模式
+							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+            }
+            // 等待回到安全位置并且稳定
+            if (limit_finder.timer > 50 && motor_control.state == Control_State_Finish) {
+                limit_finder.state = LIMIT_FIND_START_NEG;
+                limit_finder.timer = 0;
+            }
+            break;
+
+        // --- 4. 开始反向寻找 ---
+        case LIMIT_FIND_START_NEG:
+            Motor_Control_Clear_Stall();
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Speed); 
+				    motor_control.mode_run = Motor_Mode_Digital_Speed	;
+            Motor_Control_Write_Goal_Speed(-LIMIT_SEARCH_SPEED); // 反转
+            limit_finder.state = LIMIT_FIND_WAIT_NEG;
+            limit_finder.timer = 0;
+            break;
+
+        // --- 5. 等待反向堵转 ---
+        case LIMIT_FIND_WAIT_NEG:
+            if (motor_control.stall_flag || motor_control.state == Control_State_Stall) {
+                // 发生堵转，说明撞到反向限位
+                Motor_Control_Write_Goal_Speed(0); 
+                limit_finder.min_pos_raw = motor_control.real_location; // 记录原始极值
+                Motor_Control_Clear_Stall();
+                limit_finder.state = LIMIT_FIND_BACKOFF_NEG;
+                limit_finder.timer = 0;
+            } else if (limit_finder.timer > 1500) { // 15秒超时
+                Motor_Control_Write_Goal_Speed(0);
+                limit_finder.state = LIMIT_FIND_FAILED;
+            }
+            break;
+
+        // --- 6. 反向回退安全距离 ---
+        case LIMIT_FIND_BACKOFF_NEG:
+            if (limit_finder.timer == 10) {
+                limit_finder.safe_min_pos = limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST;
+                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); 
+							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+            }
+            if (limit_finder.timer > 50 && motor_control.state == Control_State_Finish) {
+                // 全部完成
+                limit_finder.state = LIMIT_FIND_DONE;
+                // 您可在此处通过UART或CAN发送 limit_finder.safe_max_pos 和 safe_min_pos 给上位机
+            }
+            break;
+    }
+}
+
 /**
   * @brief  控制器任务回调
   * @param  NULL
@@ -758,10 +873,10 @@ void Motor_Control_Callback(void)
 		if(motor_control.stall_time_us >= (1000 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
-	else if( (abs_out_electric == Current_Rated_Current)						//额定电流
+	else if( (abs_out_electric >= (Current_Rated_Current*0.98))						//额定电流
 				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
-		if(motor_control.stall_time_us >= (1000 * 1000))	motor_control.stall_flag = true;
+		if(motor_control.stall_time_us >= (200 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
 	else{

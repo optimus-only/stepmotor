@@ -57,9 +57,9 @@ void Control_Cur_To_Electric(int16_t current);		//电流输出
 /****************************************  PID控制(速度控制)  ****************************************/
 typedef struct{
 	//配置
-	#define De_PID_KP	5		//默认KP 5
-	#define De_PID_KI	30	//默认KI 30 
-	#define De_PID_KD	0		//默认KD  0
+	#define De_PID_KP	100		//默认KP 5
+	#define De_PID_KI	120	//默认KI 30 
+	#define De_PID_KD	80		//默认KD  0
 	bool		valid_kp, valid_ki, valid_kd;	//参数有效标志
 	int32_t	kp, ki, kd;		//参数
 	//控制参数
@@ -214,7 +214,40 @@ typedef struct{
 	//状态
 	Motor_State		state;			//统一的电机状态
 }Motor_Control_Typedef;
+
+
+/**************************************** 极限寻找器(Homing)  ****************************************/
+// 寻找限位时的运行速度 (默认1转/秒)
+#define LIMIT_SEARCH_SPEED   (Move_Pulse_NUM * 1) 
+// 撞击限位后的回退安全距离 (默认1/10圈，即约36度)
+#define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 100)
+typedef enum {
+    LIMIT_FIND_IDLE = 0,
+    LIMIT_FIND_START_POS,      // 开始正向寻找
+    LIMIT_FIND_WAIT_POS,       // 等待正向碰撞(堵转)
+    LIMIT_FIND_BACKOFF_POS,    // 正向回退
+    LIMIT_FIND_START_NEG,      // 开始反向寻找
+    LIMIT_FIND_WAIT_NEG,       // 等待反向碰撞(堵转)
+    LIMIT_FIND_BACKOFF_NEG,    // 反向回退
+    LIMIT_FIND_DONE,           // 寻找完成
+    LIMIT_FIND_FAILED          // 寻找超时或失败
+} LimitFind_State;
+
+typedef struct {
+    LimitFind_State state;
+    uint32_t timer;
+    int32_t  max_pos_raw;      // 正向极限绝对物理位置
+    int32_t  min_pos_raw;      // 反向极限绝对物理位置
+    int32_t  safe_max_pos;     // 正向安全极限位置(回退后)
+    int32_t  safe_min_pos;     // 反向安全极限位置(回退后)
+} LimitFinder_Typedef;
+
 extern Motor_Control_Typedef motor_control;
+extern LimitFinder_Typedef limit_finder;
+
+// 极限寻找器函数声明
+void Motor_LimitFinder_Start(void);
+void Motor_LimitFinder_Loop(void);
 
 //参数配置
 void Motor_Control_SetMotorMode(Motor_Mode _mode);	//控制模式
