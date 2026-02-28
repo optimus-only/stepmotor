@@ -49,36 +49,9 @@ extern "C" {
 //引用端口定义
 #include "kernel_port.h"
 #include <stdlib.h> // for abs()
-// 调试配置
-#define TUNE_STEP_AMPLITUDE   1000    // 每次测试移动的脉冲数 (约1/50圈)
-#define TUNE_WAIT_CYCLES      250     // 每次动作后的等待周期数(假设1ms一次调用，即500ms)
-#define TUNE_MAX_KP           300     // 安全上限 KP
-#define TUNE_MAX_KD           600     // 安全上限 KD
 /****************************************  直接控制(电流控制)  ****************************************/
 /****************************************  直接控制(电流控制)  ****************************************/
 void Control_Cur_To_Electric(int16_t current);		//电流输出
-
-typedef enum {
-    TUNE_IDLE = 0,
-    TUNE_INIT,
-    TUNE_MOVE_POSITIVE,
-    TUNE_WAIT_STABLE_POS,
-    TUNE_MOVE_NEGATIVE,
-    TUNE_WAIT_STABLE_NEG,
-    TUNE_EVALUATE,
-    TUNE_COMPLETE,
-    TUNE_FAILED
-} Tune_State;
-
-typedef struct {
-    Tune_State state;
-    int32_t timer;
-    int32_t start_pos;
-    int32_t max_error;      // 记录最大跟踪误差
-    int32_t overshoot;      // 记录超调量
-    int32_t last_kp;        // 记录上一次的KP
-    bool    is_oscillating; // 震荡标志
-} AutoTune_Typedef;    //Auto_tune 
 
 /****************************************  PID控制(速度控制)  ****************************************/
 /****************************************  PID控制(速度控制)  ****************************************/
@@ -110,10 +83,10 @@ void Control_PID_To_Electric(int32_t _speed);
 /****************************************  DCE控制(位置控制)  ****************************************/
 typedef struct{
 	//配置
-	#define De_DCE_KP	5//默认KP 200
-	#define De_DCE_KI	0		//默认KI 80
-	#define De_DCE_KV	0	//默认KIV 300
-	#define De_DCE_KD	1	//默认KD  250
+	#define De_DCE_KP	800//默认KP 200
+	#define De_DCE_KI	320		//默认KI 80
+	#define De_DCE_KV	800	//默认KIV 300
+	#define De_DCE_KD	600	//默认KD  250
 	bool		valid_kp, valid_ki, valid_kv, valid_kd;	//参数有效标志
 	int32_t	kp, ki, kv, kd;		//参数
 	//控制参数(基本部分)
@@ -261,8 +234,6 @@ void Motor_Control_Callback(void);									//控制器任务回调
 void Motor_Control_Clear_Integral(void);						//清除积分
 void Motor_Control_Clear_Stall(void);								//清除堵转保护
 int32_t Motor_Control_AdvanceCompen(int32_t _speed);//超前角补偿
-void Motor_AutoTune_Start(void);
-void Motor_AutoTune_Loop(void); // 放在主循环中周期调用 (建议 1ms 或 5ms)
 
 #ifdef __cplusplus
 }

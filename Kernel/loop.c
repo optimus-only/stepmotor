@@ -59,7 +59,7 @@
 
 //Debug
 #include "button.h"
-
+#include "Location_Tracker.h"
 //#include "ssd1306.h"
 //#include "xdrive_ui.h"
 
@@ -86,7 +86,7 @@ uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 */
 void time_second_10ms_serve(void)
 {
-//   Motor_AutoTune_Loop();
+  
 }
 
 /**
@@ -130,10 +130,11 @@ void time_second_100ms_serve(void)
 				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
 	 {     
            
+       
 
-		    motor_control.stall_flag = false;
-		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
+//		    motor_control.stall_flag = false;
+//		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
 		    motor_control.mode_run = Motor_Mode_Digital_Location	;
           HAL_CAN_Start(&hcan);
 
@@ -141,7 +142,7 @@ void time_second_100ms_serve(void)
 			}
      if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
     {
-			  motor_control.stall_flag = false;
+//			  motor_control.stall_flag = false;
 		    Motor_Control_SetMotorMode(Control_Mode_Stop);
 		    motor_control.mode_run = Control_Mode_Stop	;
 			    HAL_CAN_Stop(&hcan);
@@ -228,7 +229,10 @@ void loop(void)
   HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
 
   motor_control.mode_run = Control_Mode_Stop	;
-	encode_cali.trigger = true;			//触发校准
+  //encode_cali.trigger = true;			//触发校准
+	Location_Tracker_Set_Default();
+	Location_Tracker_Init();
+//	Set_Safe_Baseline();
 
 	//FOR Circulation
 	for(;;)
