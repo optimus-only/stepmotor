@@ -86,7 +86,8 @@ uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 */
 void time_second_10ms_serve(void)
 {
-  Motor_LimitFinder_Loop();  // <---- 添加这行：执行极限寻找状态机
+  if(limit_finder.state != LIMIT_FIND_DONE) 
+	{Motor_LimitFinder_Loop(); }
 }
 
 /**
@@ -130,24 +131,38 @@ void time_second_100ms_serve(void)
 				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
 	 {     
            
-       
+       if(limit_finder.state == LIMIT_FIND_DONE)
+			 { Motor_Control_Clear_Stall();
+		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+			  Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+		    motor_control.mode_run = Motor_Mode_Digital_Location	;
+			 }
 
-//		    motor_control.stall_flag = false;
-//		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-//			  Motor_Control_Write_Goal_Location(motor_control.goal_location-51200);
-		    //  motor_control.mode_run = Motor_Mode_Digital_Location	;
-		      Motor_LimitFinder_Start();  // <---- 启动寻找极限程序
+//		   
+		     else
+					 Motor_LimitFinder_Start();  // <---- 启动寻找极限程序
 //          HAL_CAN_Start(&hcan);
 
 		    
 			}
      if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
     {
-			 // motor_control.stall_flag = false;
-		    Motor_Control_SetMotorMode(Control_Mode_Stop);
-		    motor_control.mode_run = Control_Mode_Stop	;
-			  limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
-			    HAL_CAN_Stop(&hcan);
+			
+			 if(limit_finder.state == LIMIT_FIND_DONE)
+			 {Motor_Control_Clear_Stall();
+		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+			  Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+		    motor_control.mode_run = Motor_Mode_Digital_Location	;
+			 }
+       else
+			 {
+				 Motor_Control_SetMotorMode(Control_Mode_Stop);
+			   motor_control.mode_run = Control_Mode_Stop	;
+//				 HAL_CAN_Stop(&hcan);
+			 }
+		    
+			 // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
+			    
 		
       }
 	 

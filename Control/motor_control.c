@@ -573,7 +573,7 @@ void Motor_LimitFinder_Loop(void)
 
         // --- 2. 等待正向堵转 ---
         case LIMIT_FIND_WAIT_POS:
-            if (motor_control.stall_flag || motor_control.state == Control_State_Stall) {
+            if (	motor_control.stall_flag || motor_control.state == Control_State_Stall) {
                 // 发生堵转，说明撞到正向限位
 							  Motor_Control_SetMotorMode(Control_Mode_Stop);
 		            motor_control.mode_run = Control_Mode_Stop	;
@@ -591,13 +591,14 @@ void Motor_LimitFinder_Loop(void)
         // --- 3. 正向回退安全距离 ---
         case LIMIT_FIND_BACKOFF_POS:
             if (limit_finder.timer == 10) { // 停顿100ms后开始回退
+							   Motor_Control_Clear_Stall();
                 limit_finder.safe_max_pos = limit_finder.max_pos_raw - LIMIT_BACKOFF_DIST;
                 Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); // 切换回位置模式
 							  motor_control.mode_run = Motor_Mode_Digital_Location	;
                 Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
             }
             // 等待回到安全位置并且稳定
-            if (limit_finder.timer > 50 && motor_control.state == Control_State_Finish) {
+            if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
                 limit_finder.state = LIMIT_FIND_START_NEG;
                 limit_finder.timer = 0;
             }
@@ -615,14 +616,16 @@ void Motor_LimitFinder_Loop(void)
 
         // --- 5. 等待反向堵转 ---
         case LIMIT_FIND_WAIT_NEG:
-            if (motor_control.stall_flag || motor_control.state == Control_State_Stall) {
+            if (	motor_control.stall_flag || motor_control.state == Control_State_Stall) {
                 // 发生堵转，说明撞到反向限位
+							  Motor_Control_SetMotorMode(Control_Mode_Stop);
+		            motor_control.mode_run = Control_Mode_Stop	;
                 Motor_Control_Write_Goal_Speed(0); 
                 limit_finder.min_pos_raw = motor_control.real_location; // 记录原始极值
                 Motor_Control_Clear_Stall();
                 limit_finder.state = LIMIT_FIND_BACKOFF_NEG;
                 limit_finder.timer = 0;
-            } else if (limit_finder.timer > 1500) { // 15秒超时
+            } else if (limit_finder.timer > 100) { // 15秒超时
                 Motor_Control_Write_Goal_Speed(0);
                 limit_finder.state = LIMIT_FIND_FAILED;
             }
@@ -631,14 +634,18 @@ void Motor_LimitFinder_Loop(void)
         // --- 6. 反向回退安全距离 ---
         case LIMIT_FIND_BACKOFF_NEG:
             if (limit_finder.timer == 10) {
+							   Motor_Control_Clear_Stall();
                 limit_finder.safe_min_pos = limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST;
                 Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); 
 							  motor_control.mode_run = Motor_Mode_Digital_Location	;
                 Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
             }
-            if (limit_finder.timer > 50 && motor_control.state == Control_State_Finish) {
+            if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
                 // 全部完成
                 limit_finder.state = LIMIT_FIND_DONE;
+							Motor_Control_SetMotorMode(Control_Mode_Stop);
+		          motor_control.mode_run = Control_Mode_Stop	;
+			         // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
                 // 您可在此处通过UART或CAN发送 limit_finder.safe_max_pos 和 safe_min_pos 给上位机
             }
             break;
@@ -873,8 +880,8 @@ void Motor_Control_Callback(void)
 		if(motor_control.stall_time_us >= (1000 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
-	else if( (abs_out_electric >= (Current_Rated_Current*0.98))						//额定电流
-				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
+	else if( (abs_out_electric >= (Current_Rated_Current*98/100))						//额定电流
+				|| (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
 		if(motor_control.stall_time_us >= (200 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
@@ -885,8 +892,8 @@ void Motor_Control_Callback(void)
 	}
 
 	//过载检测
-	if(abs_out_electric == Current_Rated_Current){		//额定电流
-		if(motor_control.overload_time_us >= (1000 * 1000))	motor_control.overload_flag = true;
+	if(abs_out_electric >= (Current_Rated_Current*98/100)){		//额定电流
+		if(motor_control.overload_time_us >= (100 * 1000))	motor_control.overload_flag = true;
 		else																								motor_control.overload_time_us += CONTROL_PERIOD_US;
 	}
 	else{

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\XDrive_APP\XDrive_APP.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\XDrive_APP\XDrive_APP.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6110004: Last Updated: Sat Feb 28 17:43:56 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6110004: Last Updated: Mon Mar  2 11:10:25 2026
 <BR><P>
 <H3>Maximum Stack Usage =        168 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -86,7 +86,7 @@ Global Symbols
 <P><STRONG><a name="[37]"></a>__main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry.o(.ARM.Collect$$$$00000000))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(.text)
 </UL>
-<P><STRONG><a name="[c1]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
+<P><STRONG><a name="[c2]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
 
 <P><STRONG><a name="[39]"></a>_main_scatterload</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry5.o(.ARM.Collect$$$$00000004))
 <BR><BR>[Calls]<UL><LI><a href="#[3a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
@@ -96,15 +96,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[3a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
 </UL>
 
-<P><STRONG><a name="[c2]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
+<P><STRONG><a name="[c3]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
 
-<P><STRONG><a name="[c3]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
+<P><STRONG><a name="[c4]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
 
-<P><STRONG><a name="[c4]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
+<P><STRONG><a name="[c5]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
 
-<P><STRONG><a name="[c5]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000D))
+<P><STRONG><a name="[c6]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000D))
 
-<P><STRONG><a name="[c6]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$0000000F))
+<P><STRONG><a name="[c7]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$0000000F))
 
 <P><STRONG><a name="[0]"></a>Reset_Handler</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, startup_stm32f103xb.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
@@ -235,9 +235,9 @@ Global Symbols
 <LI><a href="#[3b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 
-<P><STRONG><a name="[c7]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[c8]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
-<P><STRONG><a name="[c8]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[c9]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[3b]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
@@ -254,7 +254,7 @@ Global Symbols
 <LI><a href="#[54]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Control_DCE_Init
 </UL>
 
-<P><STRONG><a name="[c9]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[ca]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[3d]"></a>_memset$wrapper</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, memseta.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
@@ -291,7 +291,7 @@ Global Symbols
 <LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Location_Tracker_Capture_Goal
 </UL>
 
-<P><STRONG><a name="[ca]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
+<P><STRONG><a name="[cb]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
 
 <P><STRONG><a name="[3f]"></a>_float_round</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, fepilogue.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
@@ -309,7 +309,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_main_scatterload
 </UL>
 
-<P><STRONG><a name="[cb]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
+<P><STRONG><a name="[cc]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
 
 <P><STRONG><a name="[4]"></a>BusFault_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(.text.BusFault_Handler))
 <BR><BR>[Calls]<UL><LI><a href="#[4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BusFault_Handler
@@ -384,8 +384,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Init
 </UL>
 
-<P><STRONG><a name="[55]"></a>Control_DCE_To_Electric</STRONG> (Thumb, 274 bytes, Stack size 28 bytes, motor_control.o(.text.Control_DCE_To_Electric))
-<BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = Control_DCE_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
+<P><STRONG><a name="[55]"></a>Control_DCE_To_Electric</STRONG> (Thumb, 276 bytes, Stack size 24 bytes, motor_control.o(.text.Control_DCE_To_Electric))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = Control_DCE_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;REIN_HW_Elec_SetDivideElec
 </UL>
@@ -400,7 +400,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Init
 </UL>
 
-<P><STRONG><a name="[57]"></a>Control_PID_To_Electric</STRONG> (Thumb, 236 bytes, Stack size 20 bytes, motor_control.o(.text.Control_PID_To_Electric))
+<P><STRONG><a name="[57]"></a>Control_PID_To_Electric</STRONG> (Thumb, 234 bytes, Stack size 20 bytes, motor_control.o(.text.Control_PID_To_Electric))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = Control_PID_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
 </UL>
 <BR>[Calls]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;REIN_HW_Elec_SetDivideElec
@@ -908,7 +908,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Callback
 </UL>
 
-<P><STRONG><a name="[98]"></a>Motor_Control_Callback</STRONG> (Thumb, 1050 bytes, Stack size 24 bytes, motor_control.o(.text.Motor_Control_Callback))
+<P><STRONG><a name="[98]"></a>Motor_Control_Callback</STRONG> (Thumb, 1040 bytes, Stack size 24 bytes, motor_control.o(.text.Motor_Control_Callback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = Motor_Control_Callback &rArr; Move_Reconstruct_Capture_Goal &rArr; __aeabi_fmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Speed_Tracker_NewTask
@@ -929,6 +929,10 @@ Global Symbols
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;REIN_HW_Elec_SetBrake
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
+</UL>
+
+<P><STRONG><a name="[bf]"></a>Motor_Control_Clear_Stall</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Clear_Stall))
+<BR><BR>[Called By]<UL><LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
 
 <P><STRONG><a name="[a4]"></a>Motor_Control_Init</STRONG> (Thumb, 104 bytes, Stack size 16 bytes, motor_control.o(.text.Motor_Control_Init))
@@ -953,13 +957,14 @@ Global Symbols
 
 <P><STRONG><a name="[71]"></a>Motor_Control_Write_Goal_Location</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Write_Goal_Location))
 <BR><BR>[Called By]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_RxFifo0MsgPendingCallback
+<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
 
-<P><STRONG><a name="[c0]"></a>Motor_LimitFinder_Loop</STRONG> (Thumb, 386 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_LimitFinder_Loop))
+<P><STRONG><a name="[c1]"></a>Motor_LimitFinder_Loop</STRONG> (Thumb, 402 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_LimitFinder_Loop))
 <BR><BR>[Called By]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_run
 </UL>
 
-<P><STRONG><a name="[bf]"></a>Motor_LimitFinder_Start</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_LimitFinder_Start))
+<P><STRONG><a name="[c0]"></a>Motor_LimitFinder_Start</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_LimitFinder_Start))
 <BR><BR>[Called By]<UL><LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
 
@@ -1240,33 +1245,35 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL>
-<P><STRONG><a name="[bb]"></a>time_second_100ms_serve</STRONG> (Thumb, 178 bytes, Stack size 8 bytes, loop.o(.text.time_second_100ms_serve))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = time_second_100ms_serve &rArr; HAL_CAN_Stop
+<P><STRONG><a name="[bb]"></a>time_second_100ms_serve</STRONG> (Thumb, 254 bytes, Stack size 16 bytes, loop.o(.text.time_second_100ms_serve))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = time_second_100ms_serve &rArr; HAL_CAN_Stop
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_SetMotorMode
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_AddTxMessage
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
+<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Write_Goal_Location
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_Stop
-<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Start
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Start
+<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Clear_Stall
 </UL>
 <BR>[Called By]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_run
 </UL>
 
-<P><STRONG><a name="[ba]"></a>time_second_run</STRONG> (Thumb, 80 bytes, Stack size 8 bytes, loop.o(.text.time_second_run))
-<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = time_second_run &rArr; time_second_100ms_serve &rArr; HAL_CAN_Stop
+<P><STRONG><a name="[ba]"></a>time_second_run</STRONG> (Thumb, 94 bytes, Stack size 8 bytes, loop.o(.text.time_second_run))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = time_second_run &rArr; time_second_100ms_serve &rArr; HAL_CAN_Stop
 </UL>
-<BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Loop
+<BR>[Calls]<UL><LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Loop
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;loop
 </UL>
 
-<P><STRONG><a name="[cc]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
+<P><STRONG><a name="[cd]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
 
-<P><STRONG><a name="[cd]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
+<P><STRONG><a name="[ce]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
 
-<P><STRONG><a name="[ce]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
+<P><STRONG><a name="[cf]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 <P>
 <H3>
 Local Symbols

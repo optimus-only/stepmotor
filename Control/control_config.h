@@ -50,7 +50,7 @@ extern "C" {
 #include <stdbool.h>
 
 /********************  硬件配置区  ********************/
-#define Current_Rated_Current		(3300)		//额定电流(mA)
+#define Current_Rated_Current		(1000)		//额定电流(mA)
 #define Current_Cali_Current		(2000 )		//校准电流(mA)
 
 /********************  运动参数配置区  ********************/
