@@ -63,7 +63,7 @@ void SystemClock_Config(void);
   * @retval int
   */
 int main(void)
-{
+                                                                                {
   /* USER CODE BEGIN 1 */
 //#if STOCKPILE_APP_FIRMWARE_ADDR != 0x08000000U
 //	SCB->VTOR = SCB_VTOR_TBLOFF_Msk & STOCKPILE_APP_FIRMWARE_ADDR;

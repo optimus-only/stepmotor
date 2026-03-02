@@ -159,33 +159,6 @@ void Control_PID_To_Electric(int32_t _speed)
 	if(pid.v_error < (-1024 * 1024))	pid.v_error = (-1024 * 1024);
 	//op输出
 	pid.op = ((pid.kp) * (pid.v_error));
-	
-//	//oi输出
-//	int32_t ki_effective= pid.ki; // 积分分离：接近目标时降低积分；
-//	  if(abs(pid.v_error)<1000)
-//	   { ki_effective=0; }
-//	  else if(abs(motor_control.est_speed)<500)
-//	   {ki_effective=pid.ki/4;	 }
-//	 //积分累加
-//	  if(ki_effective!=0)	 
-//	   { pid.i_mut += ((pid.ki) * (pid.v_error));
-//	   pid.i_dec  = (pid.i_mut >> 10);
-//	   pid.i_mut -= (pid.i_dec << 10);
-//	   pid.oi    += (pid.i_dec);
-//	   }
-//	  if(pid.oi >      (  Current_Rated_Current << 10 ))	pid.oi = (  Current_Rated_Current << 10 );	//限制为额定电流 * 1024  
-//	  else if(pid.oi < (-(Current_Rated_Current << 10)))	pid.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
-//	//od输出
-//	int32_t error_diff = (pid.kd) * (pid.v_error - pid.v_error_last);
-//  static int32_t filtered_diff=0; //微分滤波（一阶低通）
-//	#define DIFF_FILTER_FACTOR 3
-//	// 移动平均滤波
-//  filtered_diff = (filtered_diff * DIFF_FILTER_FACTOR + error_diff) / (DIFF_FILTER_FACTOR + 1);
-//	pid.od = pid.kd * filtered_diff;
-//	//综合输出计算
-//	pid.out = (pid.op + pid.oi + pid.od) >> 10;
-//	  if(pid.out > 			Current_Rated_Current)		pid.out =  Current_Rated_Current; //输出限幅
-//	  else if(pid.out < -Current_Rated_Current)		pid.out = -Current_Rated_Current;
 		 //oi输出
 	pid.i_mut += ((pid.ki) * (pid.v_error));
 	pid.i_dec  = (pid.i_mut >> 10);
@@ -202,12 +175,14 @@ void Control_PID_To_Electric(int32_t _speed)
    
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
+	motor_control.foc_current=motor_control.foc_current>>1;
 	//输出FOC位置
 	if(motor_control.foc_current > 0)				motor_control.foc_location = motor_control.est_location + Move_Divide_NUM;
 	else if(motor_control.foc_current < 0)	motor_control.foc_location = motor_control.est_location - Move_Divide_NUM;
 	else																		motor_control.foc_location = motor_control.est_location;
 	//输出任务到驱动
 	REIN_HW_Elec_SetDivideElec(motor_control.foc_location, motor_control.foc_current);
+ 	motor_control.foc_current=pid.out;
 	//CurrentControl_Out_FeedTrack(motor_control.foc_location, motor_control.foc_current, false, true);
 }
 
