@@ -643,8 +643,9 @@ void Motor_LimitFinder_Loop(void)
             if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
                 // 全部完成
                 limit_finder.state = LIMIT_FIND_DONE;
-							Motor_Control_SetMotorMode(Control_Mode_Stop);
-		          motor_control.mode_run = Control_Mode_Stop	;
+							
+//							Motor_Control_SetMotorMode(Control_Mode_Stop);
+//		          motor_control.mode_run = Control_Mode_Stop	;
 			         // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
                 // 您可在此处通过UART或CAN发送 limit_finder.safe_max_pos 和 safe_min_pos 给上位机
             }
@@ -881,7 +882,7 @@ void Motor_Control_Callback(void)
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
 	else if( (abs_out_electric >= (Current_Rated_Current*98/100))						//额定电流
-				|| (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
+				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
 		if(motor_control.stall_time_us >= (200 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;

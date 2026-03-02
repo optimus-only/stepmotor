@@ -114,13 +114,19 @@ void time_second_100ms_serve(void)
 {
 
           TempAngleNow=mt6816.angle_data;
-		      tx_data[0]=TempAngleNow;
-		      tx_data[1]=TempAngleNow>>8;
-	  
-		       // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
-          for(uint8_t i=2; i<8; i++) {
-             tx_data[i] = i;
-        }
+		      tx_data[0]=limit_finder.safe_min_pos;
+		      tx_data[1]=limit_finder.safe_min_pos>>8;
+	        tx_data[2]=limit_finder.safe_min_pos>>16;
+	        tx_data[3]=limit_finder.safe_min_pos>>24;
+	        tx_data[4]=limit_finder.safe_max_pos;
+	        tx_data[5]=limit_finder.safe_max_pos>>8;
+	        tx_data[6]=limit_finder.safe_max_pos>>16;
+        	tx_data[7]=limit_finder.safe_max_pos>>24;
+
+//		       // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
+//          for(uint8_t i=2; i<8; i++) {
+//             tx_data[i] = i;
+//      }
 		      // 3. 调用HAL库函数发送
           if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
        
@@ -248,8 +254,8 @@ void loop(void)
   motor_control.mode_run = Control_Mode_Stop	;
 	 motor_control.stall_flag = false;
   //encode_cali.trigger = true;			//触发校准
-//	Location_Tracker_Set_Default();
-//	Location_Tracker_Init();
+	Location_Tracker_Set_Default();
+	Location_Tracker_Init();
 //	Set_Safe_Baseline();
 
 	//FOR Circulation

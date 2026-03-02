@@ -172,7 +172,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
                 int32_t goal_pos = (int32_t)(rxData[0] | (rxData[1] << 8) | (rxData[2] << 16) | (rxData[3] << 24)); 
                 motor_control.stall_flag = false;
                 Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-                Motor_Control_Write_Goal_Location(motor_control.goal_location-goal_pos);
+                Motor_Control_Write_Goal_Location(goal_pos);
 							  motor_control.mode_run = Motor_Mode_Digital_Location	;
 								
 							
