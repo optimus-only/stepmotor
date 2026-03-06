@@ -175,7 +175,7 @@ void Control_PID_To_Electric(int32_t _speed)
    
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
-	motor_control.foc_current=motor_control.foc_current>>1;
+	motor_control.foc_current=pid.out*25/100;
 	//输出FOC位置
 	if(motor_control.foc_current > 0)				motor_control.foc_location = motor_control.est_location + Move_Divide_NUM;
 	else if(motor_control.foc_current < 0)	motor_control.foc_location = motor_control.est_location - Move_Divide_NUM;
@@ -397,6 +397,17 @@ void Motor_Control_SetDefault(void)
 void Motor_Control_Write_Goal_Location(int32_t value)
 {
 	motor_control.goal_location = value;
+	if(limit_finder.state==LIMIT_FIND_DONE)
+	{  if(limit_finder.safe_max_pos<= value)
+	   {
+		    motor_control.goal_location=limit_finder.safe_max_pos;
+	    }
+	else if(limit_finder.safe_min_pos>=value)
+	   {
+	      motor_control.goal_location=limit_finder.safe_min_pos;
+	   }
+	}
+	
 }
 	
 /**
@@ -859,7 +870,7 @@ void Motor_Control_Callback(void)
 	else if( (abs_out_electric >= (Current_Rated_Current*98/100))						//额定电流
 				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
-		if(motor_control.stall_time_us >= (200 * 1000))	motor_control.stall_flag = true;
+		if(motor_control.stall_time_us >= (100 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
 	else{
