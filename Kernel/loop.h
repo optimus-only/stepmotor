@@ -47,7 +47,10 @@ extern "C" {
 #endif
 
 #include "kernel_port.h"
-
+extern uint32_t start_move_tick;
+extern uint32_t final_move_time;
+extern bool is_waiting_for_finish;
+extern bool time_ready_to_read;
 //loop.c
 void loop_second_base_1ms(void);	//副时钟1ms时钟
 void loop(void);

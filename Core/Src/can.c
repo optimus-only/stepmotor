@@ -20,6 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
 #include "motor_control.h"
+#include "loop.h"
+
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -174,7 +176,12 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
                 Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
                 Motor_Control_Write_Goal_Location(goal_pos);
 							  motor_control.mode_run = Motor_Mode_Digital_Location	;
-								
+							
+							
+                motor_control.state = Control_State_Running; 
+                start_move_tick = HAL_GetTick();
+                is_waiting_for_finish = true;
+                time_ready_to_read = false;
 							
                 break;
             }

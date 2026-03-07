@@ -175,7 +175,7 @@ void Control_PID_To_Electric(int32_t _speed)
    
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
-	motor_control.foc_current=pid.out*25/100;
+	motor_control.foc_current=pid.out*15/100;
 	//输出FOC位置
 	if(motor_control.foc_current > 0)				motor_control.foc_location = motor_control.est_location + Move_Divide_NUM;
 	else if(motor_control.foc_current < 0)	motor_control.foc_location = motor_control.est_location - Move_Divide_NUM;
@@ -281,8 +281,8 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 	dce.v_error = (_speed - motor_control.est_speed) >> 7;	//速度误差缩小至1/128
 	if(dce.p_error > ( 3200))	dce.p_error = ( 3200);				//限制位置误差在1/16圈内(51200/16)
 	if(dce.p_error < (-3200))	dce.p_error = (-3200);
-	if(dce.v_error > ( 4000))	dce.v_error = ( 4000);				//限制速度误差在10r/s内(51200*10/128)
-	if(dce.v_error < (-4000))	dce.v_error = (-4000);
+	if(dce.v_error > ( 4800))	dce.v_error = ( 4800);				//限制速度误差在10r/s内(51200*10/128)
+	if(dce.v_error < (-4800))	dce.v_error = (-4800);
 	//op输出计算
 	dce.op     = ((dce.kp) * (dce.p_error));
 	//oi输出计算
@@ -579,9 +579,9 @@ void Motor_LimitFinder_Loop(void)
             if (limit_finder.timer == 10) { // 停顿100ms后开始回退
 							   Motor_Control_Clear_Stall();
                 limit_finder.safe_max_pos = limit_finder.max_pos_raw - LIMIT_BACKOFF_DIST;
-                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); // 切换回位置模式
-							  motor_control.mode_run = Motor_Mode_Digital_Location	;
-                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+//                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); // 切换回位置模式
+//							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
             }
             // 等待回到安全位置并且稳定
             if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
@@ -622,9 +622,9 @@ void Motor_LimitFinder_Loop(void)
             if (limit_finder.timer == 10) {
 							   Motor_Control_Clear_Stall();
                 limit_finder.safe_min_pos = limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST;
-                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); 
-							  motor_control.mode_run = Motor_Mode_Digital_Location	;
-                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+//                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location); 
+//							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
             }
             if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
                 // 全部完成

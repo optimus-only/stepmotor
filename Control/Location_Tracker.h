@@ -61,11 +61,11 @@ typedef struct{
 	bool		valid_max_speed;
 	int32_t	max_speed;
 	//配置(加速加速度)
-	#define	DE_UP_ACC			(Move_Rated_UpAcc / 10)
+	#define	DE_UP_ACC			(Move_Rated_UpAcc /2)   //默认 除以10
 	bool		valid_up_acc;
 	int32_t	up_acc;
 	//配置(减速加速度)
-	#define	DE_Down_ACC		(Move_Rated_DownAcc / 10)
+	#define	DE_Down_ACC		(Move_Rated_DownAcc /2)
 	bool		valid_down_acc;
 	int32_t	down_acc;
 	float		down_acc_quick;	//快速运算数		1.0f / (2.0f * down_acc)

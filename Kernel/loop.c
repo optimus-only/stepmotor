@@ -78,7 +78,10 @@ CAN_TxHeaderTypeDef tx_header;
 uint32_t tx_mailbox; // 用于返回发送邮箱编号
 uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 //	
-
+uint32_t start_move_tick = 0;
+uint32_t final_move_time = 0;
+bool is_waiting_for_finish = false;
+bool time_ready_to_read = false;
 
 
 /**
@@ -112,27 +115,27 @@ void time_second_50ms_serve(void)
 */
 void time_second_100ms_serve(void)
 {
-
-          TempAngleNow=mt6816.angle_data;
+             TempAngleNow=mt6816.angle_data;
 		      tx_data[0]=limit_finder.safe_min_pos;
 		      tx_data[1]=limit_finder.safe_min_pos>>8;
-	        tx_data[2]=limit_finder.safe_min_pos>>16;
-	        tx_data[3]=limit_finder.safe_min_pos>>24;
+	        tx_data[2]=motor_control.real_location;
+	        tx_data[3]=motor_control.real_location>>8;
 	        tx_data[4]=limit_finder.safe_max_pos;
 	        tx_data[5]=limit_finder.safe_max_pos>>8;
 	        tx_data[6]=limit_finder.safe_max_pos>>16;
-        	tx_data[7]=limit_finder.safe_max_pos>>24;
-
-//		       // 1. 组装数据 (例如：发送01 02 03 04 05 06 07 08)
-//          for(uint8_t i=2; i<8; i++) {
-//             tx_data[i] = i;
-//      }
-		      // 3. 调用HAL库函数发送
+        	tx_data[7]=final_move_time;
+         
+if(time_ready_to_read) {
+              time_ready_to_read = false; // 清除读取标志以防重复读取
+                    // 3. 调用HAL库函数发送
           if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
        
            // Error_Handler();
 							HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,0);
                                 } 
+              
+          }
+		
      
 				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
 	 {     
@@ -192,6 +195,14 @@ void loop_second_base_1ms(void)
 { 
 	time_1ms_count++;
 	time_second_1ms++;
+	
+	// --------- 增加部分: 检查到位逻辑 ---------
+    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
+        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
+        is_waiting_for_finish = false;                     // 关闭等待
+        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
+    }
+		
 	if(!(time_second_1ms % 10))		{time_second_10ms++;		}
 	if(!(time_second_1ms % 20))		{time_second_20ms++;		}
 	if(!(time_second_1ms % 50))		{time_second_50ms++;		}

@@ -83,7 +83,7 @@ void Control_PID_To_Electric(int32_t _speed);
 /****************************************  DCE控制(位置控制)  ****************************************/
 typedef struct{
 	//配置
-	#define De_DCE_KP	800//默认KP 200
+	#define De_DCE_KP	1000//默认KP 200
 	#define De_DCE_KI	320		//默认KI 80
 	#define De_DCE_KV	800	//默认KIV 300
 	#define De_DCE_KD	600	//默认KD  250
@@ -220,7 +220,7 @@ typedef struct{
 // 寻找限位时的运行速度 (默认1转/秒)
 #define LIMIT_SEARCH_SPEED   (Move_Pulse_NUM * 1) 
 // 撞击限位后的回退安全距离 (默认1/10圈，即约36度)
-#define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 200)
+#define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 100)
 typedef enum {
     LIMIT_FIND_IDLE = 0,
     LIMIT_FIND_START_POS,      // 开始正向寻找
