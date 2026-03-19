@@ -175,7 +175,7 @@ void Control_PID_To_Electric(int32_t _speed)
    
 	//输出FOC电流
 	motor_control.foc_current = pid.out;
-	motor_control.foc_current=pid.out*15/100;
+	motor_control.foc_current=pid.out*30/100;
 	//输出FOC位置
 	if(motor_control.foc_current > 0)				motor_control.foc_location = motor_control.est_location + Move_Divide_NUM;
 	else if(motor_control.foc_current < 0)	motor_control.foc_location = motor_control.est_location - Move_Divide_NUM;
@@ -281,16 +281,35 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 	dce.v_error = (_speed - motor_control.est_speed) >> 7;	//速度误差缩小至1/128
 	if(dce.p_error > ( 3200))	dce.p_error = ( 3200);				//限制位置误差在1/16圈内(51200/16)
 	if(dce.p_error < (-3200))	dce.p_error = (-3200);
-	if(dce.v_error > ( 4800))	dce.v_error = ( 4800);				//限制速度误差在10r/s内(51200*10/128)
-	if(dce.v_error < (-4800))	dce.v_error = (-4800);
+	if(dce.v_error > ( 5200))	dce.v_error = ( 5200);				//限制速度误差在10r/s内(51200*10/128)
+	if(dce.v_error < (-5200))	dce.v_error = (-5200);
 	//op输出计算
 	dce.op     = ((dce.kp) * (dce.p_error));
+	
 	//oi输出计算
-	dce.i_mut += ((dce.ki) * (dce.p_error));
-	dce.i_mut += ((dce.kv) * (dce.v_error));
-	dce.i_dec  = (dce.i_mut >> 7);
-	dce.i_mut -= (dce.i_dec << 7);
-	dce.oi    += (dce.i_dec);
+//	dce.i_mut += ((dce.ki) * (dce.p_error));
+//	dce.i_mut += ((dce.kv) * (dce.v_error));
+//	dce.i_dec  = (dce.i_mut >> 7);
+//	dce.i_mut -= (dce.i_dec << 7);
+//	dce.oi    += (dce.i_dec);
+	// ==== 增加：误差分离逻辑 ====
+	// 只有当位置误差小于 50 个脉冲（快到位了），才开始累积积分消除静差
+	if (abs(dce.p_error) < 50) {
+	    dce.i_mut += ((dce.ki) * (dce.p_error));
+	    dce.i_mut += ((dce.kv) * (dce.v_error));
+	    dce.i_dec  = (dce.i_mut >> 7);
+	    dce.i_mut -= (dce.i_dec << 7);
+	    dce.oi    += (dce.i_dec);
+	} else {
+		// 误差大时清除积分，完全靠比例项(op)去追
+		dce.i_mut = 0;
+		dce.oi = 0; 
+	}
+	
+	// oi 的限幅（比如限制在最大 300mA）
+	int32_t oi_limit = 300 << 10; 
+	if(dce.oi > oi_limit)	    dce.oi = oi_limit;
+	else if(dce.oi < -oi_limit)	dce.oi = -oi_limit;
 	if(dce.oi >      (  Current_Rated_Current << 10 ))	dce.oi = (  Current_Rated_Current << 10 );	//限制为额定电流 * 1024
 	else if(dce.oi < (-(Current_Rated_Current << 10)))	dce.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
 	//od输出计算
@@ -303,12 +322,12 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 //    }
 //	//综合输出计算
 	dce.out = (dce.op + dce.oi + dce.od) >> 10;
-//		#define POSITION_DEADZONE 3   //添加死区
-//    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
-//        dce.out = 0;
-//        // 可选: 清除积分项防止累积
-//         dce.i_mut = 0; dce.oi = 0;
-//    }
+		#define POSITION_DEADZONE 3   //添加死区
+    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
+        dce.out = 0;
+        // 可选: 清除积分项防止累积
+         dce.i_mut = 0; dce.oi = 0;
+    }
 	if(dce.out > 			Current_Rated_Current)		dce.out =  Current_Rated_Current;
 	else if(dce.out < -Current_Rated_Current)		dce.out = -Current_Rated_Current;
 
@@ -870,7 +889,7 @@ void Motor_Control_Callback(void)
 	else if( (abs_out_electric >= (Current_Rated_Current*98/100))						//额定电流
 				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
-		if(motor_control.stall_time_us >= (100 * 1000))	motor_control.stall_flag = true;
+		if(motor_control.stall_time_us >= (500 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
 	else{

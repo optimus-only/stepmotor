@@ -220,7 +220,7 @@ typedef struct{
 // 寻找限位时的运行速度 (默认1转/秒)
 #define LIMIT_SEARCH_SPEED   (Move_Pulse_NUM * 1) 
 // 撞击限位后的回退安全距离 (默认1/10圈，即约36度)
-#define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 100)
+#define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 99)
 typedef enum {
     LIMIT_FIND_IDLE = 0,
     LIMIT_FIND_START_POS,      // 开始正向寻找

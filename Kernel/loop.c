@@ -82,15 +82,44 @@ uint32_t start_move_tick = 0;
 uint32_t final_move_time = 0;
 bool is_waiting_for_finish = false;
 bool time_ready_to_read = false;
-
+/* USER CODE BEGIN 自动运行相关变量 */
+bool is_auto_run = false;             // 是否处于自动往复运行状态
+uint32_t last_auto_run_tick = 0;      // 记录上次掉头的时间戳
+bool auto_run_target_max = false;     // 当前的目标方向 (false=走向min, true=走向max)
+/* USER CODE END */
 
 /**
 * @brief 副时钟10ms执行
 */
 void time_second_10ms_serve(void)
 {
-  if(limit_finder.state != LIMIT_FIND_DONE) 
-	{Motor_LimitFinder_Loop(); }
+
+	if(limit_finder.state != LIMIT_FIND_DONE) 
+    {
+        Motor_LimitFinder_Loop(); 
+    }
+
+    // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
+    if (is_auto_run) {
+        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
+        if (HAL_GetTick() - last_auto_run_tick >=100) {
+            last_auto_run_tick = HAL_GetTick(); // 更新计时器
+            
+            Motor_Control_Clear_Stall();
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+            
+            if (auto_run_target_max) {
+                // 当前正走向 Max，时间到了改为走向 Min
+                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+                auto_run_target_max = false;
+            } else {
+                // 当前正走向 Min，时间到了改为走向 Max
+                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+                auto_run_target_max = true;
+            }
+            motor_control.mode_run = Motor_Mode_Digital_Location;
+        }
+    }
 }
 
 /**
@@ -135,45 +164,91 @@ if(time_ready_to_read) {
                                 } 
               
           }
-		
+		// --- 读取两个按键的状态 ---
+    bool btn_down_pressed = (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET);
+    bool btn_up_pressed   = (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET);
+
+    // 1. 判断是否同时按下两个按键 -> 启动自动往复
+    if (btn_down_pressed && btn_up_pressed) {
+        if (!is_auto_run && limit_finder.state == LIMIT_FIND_DONE) {
+            is_auto_run = true;                 // 开启自动运行
+            last_auto_run_tick = HAL_GetTick(); // 记录起始时间
+            auto_run_target_max = true;         // 默认先往 Max 走
+            
+            Motor_Control_Clear_Stall();
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+            Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+            motor_control.mode_run = Motor_Mode_Digital_Location;
+        }
+    }
+    // 2. 如果当前在自动运行，且按下了任意单个按键 -> 停止电机并退出自动运行
+    else if (is_auto_run && (btn_down_pressed || btn_up_pressed)) {
+        is_auto_run = false; // 关闭自动运行标志
+        Motor_Control_SetMotorMode(Control_Mode_Stop);
+        motor_control.mode_run = Control_Mode_Stop;
+    }
+    // 3. 原有的单键逻辑 (仅在非自动运行时才生效)
+    else if (!is_auto_run) {
+        if (btn_down_pressed) {     
+            if(limit_finder.state == LIMIT_FIND_DONE) { 
+                Motor_Control_Clear_Stall();
+                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+                motor_control.mode_run = Motor_Mode_Digital_Location;
+            } else {
+                Motor_LimitFinder_Start();  // 启动寻找极限程序
+            }
+        }
+        else if (btn_up_pressed) {
+            if(limit_finder.state == LIMIT_FIND_DONE) {
+                Motor_Control_Clear_Stall();
+                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+                motor_control.mode_run = Motor_Mode_Digital_Location;
+            } else {
+                Motor_Control_SetMotorMode(Control_Mode_Stop);
+                motor_control.mode_run = Control_Mode_Stop;
+            }
+        }
+    }
      
-				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-	 {     
-           
-       if(limit_finder.state == LIMIT_FIND_DONE)
-			 { Motor_Control_Clear_Stall();
-		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-			  Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-		    motor_control.mode_run = Motor_Mode_Digital_Location	;
-			 }
+//				if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+//	 {     
+//           
+//       if(limit_finder.state == LIMIT_FIND_DONE)
+//			 { Motor_Control_Clear_Stall();
+//		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//			  Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+//		    motor_control.mode_run = Motor_Mode_Digital_Location	;
+//			 }
 
-//		   
-		     else
-					 Motor_LimitFinder_Start();  // <---- 启动寻找极限程序
-//          HAL_CAN_Start(&hcan);
+////		   
+//		     else
+//					 Motor_LimitFinder_Start();  // <---- 启动寻找极限程序
+////          HAL_CAN_Start(&hcan);
 
-		    
-			}
-     if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-    {
-			
-			 if(limit_finder.state == LIMIT_FIND_DONE)
-			 {Motor_Control_Clear_Stall();
-		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-			  Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-		    motor_control.mode_run = Motor_Mode_Digital_Location	;
-			 }
-       else
-			 {
-				 Motor_Control_SetMotorMode(Control_Mode_Stop);
-			   motor_control.mode_run = Control_Mode_Stop	;
-//				 HAL_CAN_Stop(&hcan);
-			 }
-		    
-			 // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
-			    
-		
-      }
+//		    
+//			}
+//     if(HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+//    {
+//			
+//			 if(limit_finder.state == LIMIT_FIND_DONE)
+//			 {Motor_Control_Clear_Stall();
+//		    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//			  Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+//		    motor_control.mode_run = Motor_Mode_Digital_Location	;
+//			 }
+//       else
+//			 {
+//				 Motor_Control_SetMotorMode(Control_Mode_Stop);
+//			   motor_control.mode_run = Control_Mode_Stop	;
+////				 HAL_CAN_Stop(&hcan);
+//			 }
+//		    
+//			 // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态
+//			    
+//		
+//      }
 	 
 }
 	

@@ -27,23 +27,12 @@ Project File Date:  02/28/2026
 <h2>Output:</h2>
 *** Using Compiler 'V6.11', folder: 'E:\Keil5\ARM\ARMCLANG\Bin'
 Build target 'XDrive_APP'
-../Control/motor_control.c(53): warning: In file included from...
-../Control/Speed_Tracker.h(60): warning: 'DE_UP_ACC' macro redefined [-Wmacro-redefined]
-        #define DE_UP_ACC                       (Move_Rated_UpAcc / 10)
-                ^
-../Control/Location_Tracker.h(64): note: previous definition is here
-        #define DE_UP_ACC                       (Move_Rated_UpAcc /2)   //默认 除以10
-                ^
-../Control/motor_control.c(549): warning: enumeration values 'LIMIT_FIND_IDLE', 'LIMIT_FIND_DONE', and 'LIMIT_FIND_FAILED' not handled in switch [-Wswitch]
-    switch (limit_finder.state) {
-            ^
-2 warnings generated.
-compiling motor_control.c...
+compiling loop.c...
 linking...
-Program Size: Code=17214 RO-data=2334 RW-data=32 ZI-data=3752  
+Program Size: Code=17436 RO-data=2336 RW-data=32 ZI-data=3752  
 FromELF: creating hex file...
 After Build - User command #1: fromelf --bin ".\XDrive_APP\XDrive_APP.axf" --output ".\BIN\xdrive_app.bin"
-".\XDrive_APP\XDrive_APP.axf" - 0 Error(s), 2 Warning(s).
+".\XDrive_APP\XDrive_APP.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
