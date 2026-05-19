@@ -36,6 +36,7 @@
 ".\xdrive_app\mt6816.o"
 ".\xdrive_app\hw_elec.o"
 ".\xdrive_app\uart_mixed.o"
+".\xdrive_app\signal_port.o"
 ".\xdrive_app\rein_math.o"
 ".\xdrive_app\sin_form.o"
 ".\xdrive_app\stockpile_f103cb.o"

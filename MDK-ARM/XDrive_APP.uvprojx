@@ -588,6 +588,11 @@
               <FileType>1</FileType>
               <FilePath>..\Base_Drivers\uart_mixed.c</FilePath>
             </File>
+            <File>
+              <FileName>signal_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Base_Drivers\signal_port.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

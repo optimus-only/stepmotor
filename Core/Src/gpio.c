@@ -199,6 +199,92 @@ void REIN_GPIO_MT6816_SPI_Init(void)
 	HAL_GPIO_Init(MT6816_SPI_CS_GPIO_Port, &GPIO_InitStruct);
 }
 
+/********** SIGNAL **********/
+/********** SIGNAL **********/
+/********** SIGNAL **********/
+/**
+  * @brief  GPIO初始化(SIGNAL_COUNT)
+  * @param  NULL
+  * @retval NULL
+*/
+void REIN_GPIO_SIGNAL_COUNT_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	
+#ifdef SIGNAL_COUNT_ENA_CLK_ENABLE
+	/*GPIO Ports Clock Enable*/
+	SIGNAL_COUNT_ENA_CLK_ENABLE();		//启用ENA端口时钟
+	/*Configure GPIO pins*/
+	GPIO_InitStruct.Pin =SIGNAL_COUNT_ENA_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
+	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
+	HAL_GPIO_Init(SIGNAL_COUNT_ENA_GPIO_Port, &GPIO_InitStruct);
+#endif
+	
+#ifdef SIGNAL_COUNT_DIR_CLK_ENABLE
+	/*GPIO Ports Clock Enable*/
+	SIGNAL_COUNT_DIR_CLK_ENABLE();		//启用DIR端口时钟
+	/*Configure GPIO pins*/
+	GPIO_InitStruct.Pin = SIGNAL_COUNT_DIR_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;	//双边沿中断
+	GPIO_InitStruct.Pull = GPIO_NOPULL;									//禁用上下拉
+	HAL_GPIO_Init(SIGNAL_COUNT_DIR_GPIO_Port, &GPIO_InitStruct);
+	/*EXTI interrupt init*/
+	HAL_NVIC_EnableIRQ(SIGNAL_COUNT_DIR_Get_IRQn);	//使能DIR中断
+#endif
+}
+
+/**
+  * @brief  GPIO清理(SIGNAL_COUNT)
+  * @param  NULL
+  * @retval NULL
+*/
+void REIN_GPIO_SIGNAL_COUNT_DeInit(void)
+{
+	/*EXTI interrupt deinit*/
+	HAL_NVIC_DisableIRQ(SIGNAL_COUNT_DIR_Get_IRQn);	//失能DIR中断
+	/*Configure GPIO pins */
+	HAL_GPIO_DeInit(SIGNAL_COUNT_DIR_GPIO_Port, SIGNAL_COUNT_DIR_Pin);	//重置DIR
+	HAL_GPIO_DeInit(SIGNAL_COUNT_ENA_GPIO_Port, SIGNAL_COUNT_ENA_Pin);	//重置ENA
+}
+
+/**
+  * @brief  GPIO初始化(SIGNAL_PWM)
+  * @param  NULL
+  * @retval NULL
+*/
+void REIN_GPIO_SIGNAL_PWM_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	/*GPIO Ports Clock Enable*/
+	SIGNAL_PWM_ENA_CLK_ENABLE();		//启用ENA端口时钟
+	SIGNAL_PWM_DIR_CLK_ENABLE();		//启用DIR端口时钟
+	/*Configure GPIO pins*/
+	GPIO_InitStruct.Pin = SIGNAL_PWM_ENA_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
+	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
+	HAL_GPIO_Init(SIGNAL_PWM_ENA_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pins*/
+	GPIO_InitStruct.Pin = SIGNAL_PWM_DIR_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;		//输入模式
+	GPIO_InitStruct.Pull = GPIO_NOPULL;				//禁用上下拉
+	HAL_GPIO_Init(SIGNAL_PWM_DIR_GPIO_Port, &GPIO_InitStruct);
+}
+
+/**
+  * @brief  GPIO清理(SIGNAL_PWM)
+  * @param  NULL
+  * @retval NULL
+*/
+void REIN_GPIO_SIGNAL_PWM_DeInit(void)
+{
+	/*Configure GPIO pins*/
+	HAL_GPIO_DeInit(SIGNAL_PWM_DIR_GPIO_Port, SIGNAL_PWM_DIR_Pin);	//重置DIR
+	HAL_GPIO_DeInit(SIGNAL_PWM_ENA_GPIO_Port, SIGNAL_PWM_ENA_Pin);	//重置ENA
+}
+
+
+
 /**
   * @brief  GPIO初始化(Status_Led)
   * @param  NULL
