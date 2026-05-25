@@ -60,6 +60,9 @@
 //Debug
 #include "button.h"
 #include "Location_Tracker.h"
+#include "modbus_slave.h"  
+#include "uart_mixed.h"  
+#include "usart.h"
 //#include "ssd1306.h"
 //#include "xdrive_ui.h"
 
@@ -290,7 +293,26 @@ void loop_second_base_1ms(void)
 	if(!(time_second_1ms % 100))	{time_second_100ms++;		}
 	if(!(time_second_1ms % 1000))	{time_second_1ms = 0;		}
 }
-
+void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
+{
+    // 【修改提示】这里需要调用你 uart_mixed.c 中实际的发送函数。
+    // 如果你使用的是 HAL 库 DMA 发送，可以这样写：
+     HAL_UART_Transmit_DMA(&huart1, tx_data, tx_len);
+    
+    // 如果你有自定义的发送函数，例如：
+    // Uart_Mixed_Transmit(tx_data, tx_len); 
+}
+void Modbus_Rx_Callback(uint8_t *rx_buf, uint16_t rx_len)
+{
+    // 将收到的数据喂给 Modbus 解析任务
+    Modbus_Receive_Task(rx_buf, rx_len);
+}
+void Setup_Modbus_Communication(void)
+{
+     REIN_UART_Modbus_Set_Default();
+	   REIN_UART_Modbus_Init();
+   
+}
 /*********************************************************************/
 /****************************    LOOP    *****************************/
 /*********************************************************************/
@@ -317,7 +339,7 @@ void loop(void)
 	
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化
-
+  Setup_Modbus_Communication();
 	REIN_HW_Elec_Init();	//硬件电流控制器
 
 	

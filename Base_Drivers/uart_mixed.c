@@ -66,7 +66,7 @@
 
 //Application_User_Core
 #include "usart.h"
-
+#include "modbus_slave.h"
 /**
   * @brief  混合串口实例定义
 */
@@ -324,10 +324,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	muart->len_rx = UART_BuffSize - __HAL_DMA_GET_COUNTER(muart->pdma_rx);	//获得接收到的数据量
 	memcpy(muart->buff_rx_transfer, muart->buff_rx, muart->len_rx);					//拷贝
 	muart->count_rx += muart->len_rx;
-
+ // Modbus_Receive_Task(muart1->buff_rx_transfer, muart1->len_rx);
 	//开始DMA接收
 	HAL_UART_Receive_DMA(muart->puart, (uint8_t*)muart->buff_rx, UART_BuffSize);
-	
+	Modbus_Receive_Task((uint8_t*)muart->buff_rx,UART_BuffSize);
 	if(muart->len_rx > 1)
 	{
 		//调用外部接收完成回调函数

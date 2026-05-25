@@ -59,7 +59,8 @@ void loop(void);
 void LoopIT_SysTick_20KHz(void);		//系统计时器修改为20KHz
 void LoopIT_Priority_Overlay(void);	//中断优先级覆盖
 void USB_LP_CAN1_RX0_IRQHandler(void);
-
+// 新增：Modbus 配置与初始化函数
+void Setup_Modbus_Communication(void);
 
 #ifdef __cplusplus
 }
