@@ -67,6 +67,8 @@
 //Application_User_Core
 #include "usart.h"
 #include "modbus_slave.h"
+
+extern UART_HandleTypeDef huart1; // 
 /**
   * @brief  混合串口实例定义
 */
@@ -334,6 +336,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if(muart->Xfer_External_RxCallback != NULL)
 			muart->Xfer_External_RxCallback((muart->buff_rx_transfer), (muart->len_rx));
 	}
+	//HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
 }
 
 /**
@@ -357,4 +360,17 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	//调用外部发送完成回调函数
 	if(muart->Xfer_External_TxCallback != NULL)
 		muart->Xfer_External_TxCallback();
+}
+
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+
+  /* USER CODE END USART1_IRQn 0 */
+  
+  HAL_UART_IRQHandler(&huart1);
+  
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
 }

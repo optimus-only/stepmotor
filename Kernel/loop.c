@@ -51,7 +51,7 @@
 #include "kernel_port.h"
 #include "mt6816.h"
 #include "hw_elec.h"
-
+#include "dma.h"
 ////Control
 //#include "signal_port.h"
 #include "motor_control.h"
@@ -156,7 +156,7 @@ void time_second_100ms_serve(void)
 	        tx_data[5]=limit_finder.safe_max_pos>>8;
 	        tx_data[6]=limit_finder.safe_max_pos>>16;
         	tx_data[7]=final_move_time;
-         
+          Modbus_Update_Feedback();
 if(time_ready_to_read) {
               time_ready_to_read = false; // 清除读取标志以防重复读取
                     // 3. 调用HAL库函数发送
@@ -293,25 +293,27 @@ void loop_second_base_1ms(void)
 	if(!(time_second_1ms % 100))	{time_second_100ms++;		}
 	if(!(time_second_1ms % 1000))	{time_second_1ms = 0;		}
 }
+
+void Uart_Modbus_Rx_Callback(char *rx_buf, uint16_t rx_len)
+{
+    // 将 char* 强制转换为 uint8_t*，喂给 Modbus 解析栈
+    Modbus_Receive_Task((uint8_t *)rx_buf, rx_len);
+}
 void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
 {
-    // 【修改提示】这里需要调用你 uart_mixed.c 中实际的发送函数。
-    // 如果你使用的是 HAL 库 DMA 发送，可以这样写：
+
      HAL_UART_Transmit_DMA(&huart1, tx_data, tx_len);
     
-    // 如果你有自定义的发送函数，例如：
+   
     // Uart_Mixed_Transmit(tx_data, tx_len); 
 }
-void Modbus_Rx_Callback(uint8_t *rx_buf, uint16_t rx_len)
-{
-    // 将收到的数据喂给 Modbus 解析任务
-    Modbus_Receive_Task(rx_buf, rx_len);
-}
+
 void Setup_Modbus_Communication(void)
 {
      REIN_UART_Modbus_Set_Default();
-	   REIN_UART_Modbus_Init();
-   
+	   Uart_Mixed_Init(&muart1,Uart_Modbus_Rx_Callback,NULL);
+   	REIN_UART_Modbus_Init();
+    
 }
 /*********************************************************************/
 /****************************    LOOP    *****************************/
@@ -334,7 +336,7 @@ void loop(void)
 //	Slave_Reg_Init();			//校验Flash数据并配置参数
 	
 	//基本外设初始化(Base_Drivers)(LOOP直接进行)
-	//REIN_DMA_Init();
+	REIN_DMA_Init();
 //	REIN_ADC_Init();	
 	
 	//基本外设初始化()

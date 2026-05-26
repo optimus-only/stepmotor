@@ -23,13 +23,17 @@
 #define REG_CONTROL_WORD      0x0008  // 控制字 (写1:开始找极限, 写2:停止)
 #define REG_STATUS_WORD       0x0009  // 状态字 (只读，反馈电机状态)
 
-// 寄存器总数量 (0x0000 ~ 0x0009 共10个)
-#define MODBUS_REG_NUM        10
+// === 新增：当前位置反馈寄存器 ===
+#define REG_CURRENT_POS_H     0x000A  // 当前位置 高16位 (地址 10)
+#define REG_CURRENT_POS_L     0x000B  // 当前位置 低16位 (地址 11)
+
+// 寄存器总数量 (0x0000 ~ 0x000B 共12个)
+#define MODBUS_REG_NUM        12
 
 // 供底层调用的 API
 void Modbus_Init(void);
 void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len);
-
+void Modbus_Update_Feedback(void);
 // 用户需要自己实现的底层发送函数 (在 main.c 或 uart_mixed.c 中实现)
 extern void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len);
 

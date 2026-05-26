@@ -6,6 +6,7 @@
 extern void Motor_Control_Write_Goal_Speed(int32_t speed);
 extern void Motor_LimitFinder_Start(void);
 
+
 // 定义一个虚拟的寄存器池，用于存放断电不保存的数据缓存
 uint16_t Modbus_RegPool[MODBUS_REG_NUM] = {0};
 
@@ -53,9 +54,7 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
             
         case REG_GOAL_ACCEL_L:
             val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_ACCEL_H], Modbus_RegPool[REG_GOAL_ACCEL_L]);
-            //Dynamic_Move_Acc = val32; // 更新你系统中计算轨迹用的加速度变量
-				    limit_finder.state=0;
-				    Motor_LimitFinder_Start();
+            Dynamic_Move_Acc = val32; // 更新你系统中计算轨迹用的加速度变量
             break;
             
         case REG_LEFT_LIMIT_L:
@@ -167,6 +166,19 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
         Modbus_TxBuf[tx_len++] = (crc_send >> 8) & 0xFF; // 高位在后
         
         // 调用底层串口发送函数
-        //Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
+        Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
     }
+}
+
+
+void Modbus_Update_Feedback(void)
+{
+   
+    int32_t current_pos = motor_control.real_location;
+    
+    Modbus_RegPool[REG_CURRENT_POS_H] = (uint16_t)(current_pos >> 16);
+    Modbus_RegPool[REG_CURRENT_POS_L] = (uint16_t)(current_pos & 0xFFFF);
+    
+    // 如果有状态变量，也可以顺便更新
+    // Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
 }
