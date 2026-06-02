@@ -145,7 +145,7 @@ extern "C" {
 /********** Modbus **********/
 /********** Modbus **********/
 ////Modbus端口(GPIO)
-#define Modbus_RS485DIR_GPIO_CLK_ENABLE()	__HAL_RCC_GPIOB_CLK_ENABLE()	//PC14
+#define Modbus_RS485DIR_GPIO_CLK_ENABLE()	__HAL_RCC_GPIOB_CLK_ENABLE()	//PB14
 #define Modbus_RS485DIR_GPIO_Port					(GPIOB)
 #define Modbus_RS485DIR_GPIO_Pin 					(GPIO_PIN_14)
 #define UART1_DIR_TX											(Modbus_RS485DIR_GPIO_Port -> BSRR = Modbus_RS485DIR_GPIO_Pin)

@@ -170,6 +170,12 @@ void REIN_UART_Modbus_Init(void)
 	/*GPIO Ports Clock Enable*/
 	Modbus_UART_TX_GPIO_CLK_ENABLE();
 	Modbus_UART_RX_GPIO_CLK_ENABLE();
+	Modbus_RS485DIR_GPIO_CLK_ENABLE();
+	/*Configure GPIO pins*/
+  GPIO_InitStruct.Pin = Modbus_RS485DIR_GPIO_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(Modbus_RS485DIR_GPIO_Port, &GPIO_InitStruct);
 	/*Configure GPIO pins*/
 	GPIO_InitStruct.Pin = Modbus_UART_TX_GPIO_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;

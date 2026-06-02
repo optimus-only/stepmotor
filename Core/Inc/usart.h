@@ -40,7 +40,6 @@ extern "C" {
 
 //引用端口定义
 #include "kernel_port.h"
-
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart1_rx;

@@ -301,9 +301,8 @@ void Uart_Modbus_Rx_Callback(char *rx_buf, uint16_t rx_len)
 }
 void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
 {
-
+   
      HAL_UART_Transmit_DMA(&huart1, tx_data, tx_len);
-    
    
     // Uart_Mixed_Transmit(tx_data, tx_len); 
 }
@@ -311,9 +310,9 @@ void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
 void Setup_Modbus_Communication(void)
 {
      REIN_UART_Modbus_Set_Default();
+		 REIN_UART_Modbus_Init();
 	   Uart_Mixed_Init(&muart1,Uart_Modbus_Rx_Callback,NULL);
-   	REIN_UART_Modbus_Init();
-    
+  
 }
 /*********************************************************************/
 /****************************    LOOP    *****************************/
@@ -349,23 +348,23 @@ void loop(void)
 	Calibration_Init();		//校准器初始化
 	Motor_Control_Init();	//电机控制初始化
 	
-	MX_CAN_Init();// can通信初始化
-	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
-  CAN_FilterInit();
-	// 2. 配置帧头
-  tx_header.StdId = 0x123;          // 设置标准ID，这里以0x123为例，请根据你的协议修改
-  tx_header.ExtId = 0;              // 标准帧下此字段无效
-  tx_header.IDE = CAN_ID_STD;       // 帧类型：标准帧 (CAN_ID_EXT为扩展帧)
-  tx_header.RTR = CAN_RTR_DATA;     // 帧格式：数据帧 (CAN_RTR_REMOTE为远程帧)
-  tx_header.DLC = 8;                // 数据长度：8字节 (范围1-8)
-	tx_header.TransmitGlobalTime = DISABLE; // 时间触发通信模式禁用
+//	MX_CAN_Init();// can通信初始化
+//	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
+//  CAN_FilterInit();
+//	// 2. 配置帧头
+//  tx_header.StdId = 0x123;          // 设置标准ID，这里以0x123为例，请根据你的协议修改
+//  tx_header.ExtId = 0;              // 标准帧下此字段无效
+//  tx_header.IDE = CAN_ID_STD;       // 帧类型：标准帧 (CAN_ID_EXT为扩展帧)
+//  tx_header.RTR = CAN_RTR_DATA;     // 帧格式：数据帧 (CAN_RTR_REMOTE为远程帧)
+//  tx_header.DLC = 8;                // 数据长度：8字节 (范围1-8)
+//	tx_header.TransmitGlobalTime = DISABLE; // 时间触发通信模式禁用
 	
 	//调整中断配置
 	LoopIT_Priority_Overlay();	//重写-中断优先级覆盖
 	LoopIT_SysTick_20KHz();			//重写-系统计时器修改为20KHz
 
-	HAL_CAN_Start(&hcan); // 启动CAN1
-  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
+//	HAL_CAN_Start(&hcan); // 启动CAN1
+//  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
 
   motor_control.mode_run = Control_Mode_Stop	;
 	 motor_control.stall_flag = false;

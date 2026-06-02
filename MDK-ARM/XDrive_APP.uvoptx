@@ -148,7 +148,24 @@
           <Name></Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>370</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134236778</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Base_Drivers\uart_mixed.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XDrive_APP\../Base_Drivers/uart_mixed.c\370</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -774,7 +791,7 @@
       <GroupNumber>5</GroupNumber>
       <FileNumber>39</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\Base_Drivers\modbus_slave.c</PathWithFileName>
@@ -786,7 +803,7 @@
 
   <Group>
     <GroupName>Base_Math</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

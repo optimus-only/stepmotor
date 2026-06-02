@@ -135,7 +135,7 @@ void LoopIT_Priority_Overlay(void)
   
 	HAL_NVIC_SetPriority(SysTick_IRQn,							0,	0);		//系统定时器										核心时钟
 
-	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn,      1,  0);
+//	HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn,      1,  0);
 }
 
 /**
