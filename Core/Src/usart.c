@@ -171,6 +171,7 @@ void REIN_UART_Modbus_Init(void)
 	Modbus_UART_TX_GPIO_CLK_ENABLE();
 	Modbus_UART_RX_GPIO_CLK_ENABLE();
 	Modbus_RS485DIR_GPIO_CLK_ENABLE();
+	
 	/*Configure GPIO pins*/
   GPIO_InitStruct.Pin = Modbus_RS485DIR_GPIO_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -187,9 +188,9 @@ void REIN_UART_Modbus_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(Modbus_UART_RX_GPIO_Port, &GPIO_InitStruct);
 	/*Configure AFIO*/
-#ifdef Modbus_UART_AFIO_REMAP
-	Modbus_UART_AFIO_REMAP				//启用备用的UART_AFIO映射
-#endif
+//#ifdef Modbus_UART_AFIO_REMAP
+//	Modbus_UART_AFIO_REMAP				//启用备用的UART_AFIO映射
+//#endif
 	
 	/* USART1 DMA TX Init */
 	Modbus_UART_TX_HDMA.Instance = Modbus_UART_TX_DMA_CH;

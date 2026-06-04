@@ -4,7 +4,7 @@
 #include "stdint.h"
 
 // Modbus 从机设备地址
-#define MODBUS_SLAVE_ADDRESS  0x01
+#define MODBUS_SLAVE_ADDRESS  0x04
 
 // Modbus 发送缓冲区大小
 #define MODBUS_TX_BUF_SIZE    128

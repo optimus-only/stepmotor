@@ -166,7 +166,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
         Modbus_TxBuf[tx_len++] = (crc_send >> 8) & 0xFF; // 高位在后
         
         // 调用底层串口发送函数
-        Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
+       // Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
     }
 }
 

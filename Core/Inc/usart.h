@@ -64,7 +64,7 @@ typedef struct{
 	Uart_Mode		uart_run;					//运行模式
 	Uart_Mode		uart_order;				//模式(存储数据,下次一定)
 	//配置(波特率)
-	#define		De_Uart_BaudRate	(115200)		//默认
+	#define		De_Uart_BaudRate	(9600)		//默认
 	bool			valid_uart_baudrate;				//串口波特率配置有效
 	uint32_t	baud_rate_run;		//波特率
 	uint32_t	baud_rate_order;	//波特率(存储数据,下次一定)

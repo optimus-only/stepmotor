@@ -167,53 +167,7 @@ if(time_ready_to_read) {
                                 } 
               
           }
-//		// --- 读取两个按键的状态 ---
-//    bool btn_down_pressed = (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET);
-//    bool btn_up_pressed   = (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET);
 
-//    // 1. 判断是否同时按下两个按键 -> 启动自动往复
-//    if (btn_down_pressed || btn_up_pressed) {
-//        if (!is_auto_run && limit_finder.state == LIMIT_FIND_DONE) {
-//            is_auto_run = true;                 // 开启自动运行
-//            last_auto_run_tick = HAL_GetTick(); // 记录起始时间
-//            auto_run_target_max = true;         // 默认先往 Max 走
-//            
-//            Motor_Control_Clear_Stall();
-//            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-//            Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-//            motor_control.mode_run = Motor_Mode_Digital_Location;
-//        }
-//    }
-//    // 2. 如果当前在自动运行，且按下了任意单个按键 -> 停止电机并退出自动运行
-//    else if ((is_auto_run && (btn_down_pressed || btn_up_pressed))||limit_finder.state==LIMIT_FIND_DONE) {
-//        is_auto_run = false; // 关闭自动运行标志
-//        Motor_Control_SetMotorMode(Control_Mode_Stop);
-//        motor_control.mode_run = Control_Mode_Stop;
-//    }
-//    // 3. 原有的单键逻辑 (仅在非自动运行时才生效)
-//    else if (!is_auto_run) {
-//        if (btn_down_pressed) {     
-////            if(limit_finder.state == LIMIT_FIND_DONE) { 
-////                Motor_Control_Clear_Stall();
-////                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-////                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-////                motor_control.mode_run = Motor_Mode_Digital_Location;
-////            } else {
-//                Motor_LimitFinder_Start();  // 启动寻找极限程序
-////            }
-//        }
-////        else if (btn_up_pressed) {
-////            if(limit_finder.state == LIMIT_FIND_DONE) {
-////                Motor_Control_Clear_Stall();
-////                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-////                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-////                motor_control.mode_run = Motor_Mode_Digital_Location;
-////            } else {
-////                Motor_Control_SetMotorMode(Control_Mode_Stop);
-////                motor_control.mode_run = Control_Mode_Stop;
-////            }
-////        }
-//    }
      // ------------------- 单按键复用逻辑开始 -------------------
     
     // 使用静态变量记录按键历史状态，用于边缘检测（防止按住不放时一直来回跳）
@@ -294,26 +248,7 @@ void loop_second_base_1ms(void)
 	if(!(time_second_1ms % 1000))	{time_second_1ms = 0;		}
 }
 
-void Uart_Modbus_Rx_Callback(char *rx_buf, uint16_t rx_len)
-{
-    // 将 char* 强制转换为 uint8_t*，喂给 Modbus 解析栈
-    Modbus_Receive_Task((uint8_t *)rx_buf, rx_len);
-}
-void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
-{
-   
-     HAL_UART_Transmit_DMA(&huart1, tx_data, tx_len);
-   
-    // Uart_Mixed_Transmit(tx_data, tx_len); 
-}
 
-void Setup_Modbus_Communication(void)
-{
-     REIN_UART_Modbus_Set_Default();
-		 REIN_UART_Modbus_Init();
-	   Uart_Mixed_Init(&muart1,Uart_Modbus_Rx_Callback,NULL);
-  
-}
 /*********************************************************************/
 /****************************    LOOP    *****************************/
 /*********************************************************************/
@@ -340,7 +275,6 @@ void loop(void)
 	
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化
-  Setup_Modbus_Communication();
 	REIN_HW_Elec_Init();	//硬件电流控制器
 
 	
