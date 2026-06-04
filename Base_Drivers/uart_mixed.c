@@ -363,13 +363,37 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void USART1_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART1_IRQn 0 */
-
-  /* USER CODE END USART1_IRQn 0 */
-  
+ if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET)
+    {   
+       __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+        
+        HAL_UART_RxCpltCallback(&huart1);
+    }
+  /* 2. 防死锁：检查并清除溢出错误 (ORE) */
+    if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_ORE) != RESET)
+    {
+        // 清除 ORE 标志位：先读 SR（GET_FLAG已读），再读 DR
+        uint32_t tmpreg = huart1.Instance->DR; 
+        (void)tmpreg; // 防止编译器警告
+        
+        // 如果 DMA 被错误关闭，重新拉起 DMA 接收
+        HAL_UART_Receive_DMA(&huart1, (uint8_t*)muart1.buff_rx, UART_BuffSize);
+    }
+		
+		
   HAL_UART_IRQHandler(&huart1);
-  
-  /* USER CODE BEGIN USART1_IRQn 1 */
 
-  /* USER CODE END USART1_IRQn 1 */
+}
+void DMA1_Channel4_IRQHandler(void)
+{
+  // 调用 HAL 库的 DMA 处理函数，它会自动清除标志并调用回调
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+}
+
+/**
+  * @brief 处理 USART1 接收 DMA 中断 (Channel 5)
+  */
+void DMA1_Channel5_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
 }

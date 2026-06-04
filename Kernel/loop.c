@@ -139,7 +139,7 @@ void time_second_20ms_serve(void)
 */
 void time_second_50ms_serve(void)
 {
-
+    Modbus_Update_Feedback();
 }
 
 /**
@@ -255,6 +255,16 @@ void loop_second_base_1ms(void)
 /**
 * This is Main LOOP
 */
+
+// 1. 写一个包装函数，匹配 Uart_Mixed_Init 需要的指针类型 
+// Uart_Mixed_Init 接收的是 void(*)(char*, uint16_t)
+void Modbus_Rx_Callback_Wrapper(char *data, uint16_t len)
+{
+    // 将接收到的 DMA 数据转交给 Modbus 协议解析
+    Modbus_Receive_Task((uint8_t *)data, len);
+}
+
+
 void loop(void)
 {  
 	//调试工具(Debug)
@@ -272,7 +282,8 @@ void loop(void)
 	//基本外设初始化(Base_Drivers)(LOOP直接进行)
 	REIN_DMA_Init();
 //	REIN_ADC_Init();	
-	
+	  REIN_UART_Modbus_Init();
+	 Uart_Mixed_Init(&muart1, Modbus_Rx_Callback_Wrapper, NULL);
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化
 	REIN_HW_Elec_Init();	//硬件电流控制器

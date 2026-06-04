@@ -44,8 +44,9 @@ void REIN_DMA_Init(void)
 	//启动时钟
   __HAL_RCC_DMA1_CLK_ENABLE();
 	
-  //启用DMA1_CH4中断(USART1_TX)
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-  //启用DMA1_CH5中断(USART1_RX)
-  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+//  //启用DMA1_CH4中断(USART1_TX)
+//  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+//  //启用DMA1_CH5中断(USART1_RX)
+//  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
 }

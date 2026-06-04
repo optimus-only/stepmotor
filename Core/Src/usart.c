@@ -191,7 +191,6 @@ void REIN_UART_Modbus_Init(void)
 //#ifdef Modbus_UART_AFIO_REMAP
 //	Modbus_UART_AFIO_REMAP				//启用备用的UART_AFIO映射
 //#endif
-	
 	/* USART1 DMA TX Init */
 	Modbus_UART_TX_HDMA.Instance = Modbus_UART_TX_DMA_CH;
 	Modbus_UART_TX_HDMA.Init.Direction = DMA_MEMORY_TO_PERIPH;						//内存到外设
@@ -221,6 +220,12 @@ void REIN_UART_Modbus_Init(void)
 		Error_Handler();
 	}
 	__HAL_LINKDMA(&Modbus_UART_Get_HUART, hdmarx, Modbus_UART_RX_HDMA);
+	 	HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 4, 0); // 根据你的系统修改优先级
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+
+  // USART1_RX DMA 中断 (通常是 DMA1_Channel5)
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0); // 根据你的系统修改优先级
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 	
 	/* UART初始化 */
 	/*UART Clock Enable*/

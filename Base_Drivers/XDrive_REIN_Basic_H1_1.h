@@ -148,8 +148,10 @@ extern "C" {
 #define Modbus_RS485DIR_GPIO_CLK_ENABLE()	__HAL_RCC_GPIOB_CLK_ENABLE()	//PB14
 #define Modbus_RS485DIR_GPIO_Port					(GPIOB)
 #define Modbus_RS485DIR_GPIO_Pin 					(GPIO_PIN_14)
-#define UART1_DIR_TX											(Modbus_RS485DIR_GPIO_Port -> BSRR = Modbus_RS485DIR_GPIO_Pin)
-#define UART1_DIR_RX											(Modbus_RS485DIR_GPIO_Port ->  BRR = Modbus_RS485DIR_GPIO_Pin)
+//#define UART1_DIR_TX											(Modbus_RS485DIR_GPIO_Port -> BSRR = Modbus_RS485DIR_GPIO_Pin)
+//#define UART1_DIR_RX											(Modbus_RS485DIR_GPIO_Port ->  BRR = Modbus_RS485DIR_GPIO_Pin)
+#define UART1_DIR_TX  HAL_GPIO_WritePin(Modbus_RS485DIR_GPIO_Port, Modbus_RS485DIR_GPIO_Pin, GPIO_PIN_SET)
+#define UART1_DIR_RX  HAL_GPIO_WritePin(Modbus_RS485DIR_GPIO_Port, Modbus_RS485DIR_GPIO_Pin, GPIO_PIN_RESET)
 //Modbus端口(AFIO & UART)
 #define Modbus_UART_TX_GPIO_CLK_ENABLE()	__HAL_RCC_GPIOA_CLK_ENABLE()	//PB6
 #define Modbus_UART_TX_GPIO_Port					(GPIOA)

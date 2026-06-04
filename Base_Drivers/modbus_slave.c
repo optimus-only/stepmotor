@@ -15,6 +15,9 @@ uint8_t Modbus_TxBuf[MODBUS_TX_BUF_SIZE];
 // 全局变量：由于加速度原来是宏定义，你需要把它改成全局变量，并在这里声明
 int32_t Dynamic_Move_Acc = 3000 * 32; // 默认值
 
+uint8_t Debug_Error_Frame[16]; 
+uint16_t Debug_Error_Len = 0;
+
 // CRC16 查表法/计算法实现 (计算法省内存)
 static uint16_t Modbus_CRC16(uint8_t *puchMsg, uint16_t usDataLen) 
 {
@@ -83,8 +86,15 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
 void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
 {
     if (rx_len < 8) return; // 帧太短
-    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) return; // 地址不匹配
-    
+//    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) return; // 地址不匹配
+    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) 
+    {
+        Debug_Error_Len = rx_len;
+        for(int i=0; i<rx_len && i<16; i++) {
+            Debug_Error_Frame[i] = rx_data[i];
+        }
+        return; 
+    }
     // 校验 CRC
     uint16_t crc_recv = (rx_data[rx_len - 1] << 8) | rx_data[rx_len - 2];
     uint16_t crc_calc = Modbus_CRC16(rx_data, rx_len - 2);
@@ -166,10 +176,19 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
         Modbus_TxBuf[tx_len++] = (crc_send >> 8) & 0xFF; // 高位在后
         
         // 调用底层串口发送函数
-       // Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
+        Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
     }
 }
 
+
+// 实现底层的串口发送函数
+void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
+{
+    // 调用 uart_mixed 库的触发发送函数
+    // 假设你的 Modbus 挂载在 muart1 (即 USART1) 上
+    // 注意：uart_mixed 中参数是 char*，所以需要做个类型强转
+    UART_Mixed_TxTrigger(&muart1, (char *)tx_data, tx_len);
+}
 
 void Modbus_Update_Feedback(void)
 {
