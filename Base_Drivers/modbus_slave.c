@@ -86,15 +86,15 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
 void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
 {
     if (rx_len < 8) return; // 帧太短
-//    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) return; // 地址不匹配
-    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) 
-    {
-        Debug_Error_Len = rx_len;
-        for(int i=0; i<rx_len && i<16; i++) {
-            Debug_Error_Frame[i] = rx_data[i];
-        }
-        return; 
-    }
+    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) return; // 地址不匹配
+//    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) 
+//    {
+//        Debug_Error_Len = rx_len;
+//        for(int i=0; i<rx_len && i<16; i++) {
+//            Debug_Error_Frame[i] = rx_data[i];
+//        }
+//        return; 
+//    }
     // 校验 CRC
     uint16_t crc_recv = (rx_data[rx_len - 1] << 8) | rx_data[rx_len - 2];
     uint16_t crc_calc = Modbus_CRC16(rx_data, rx_len - 2);
@@ -122,7 +122,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
             tx_len = 3;
             
             // 每次读之前，可以把系统真实状态更新到寄存器池
-            // Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
+             Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
             
             for (uint16_t i = 0; i < read_cnt; i++) {
                 Modbus_TxBuf[tx_len++] = Modbus_RegPool[start_addr + i] >> 8;
