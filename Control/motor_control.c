@@ -287,11 +287,11 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 	dce.op     = ((dce.kp) * (dce.p_error));
 	
 	//oi输出计算
-//	dce.i_mut += ((dce.ki) * (dce.p_error));
-//	dce.i_mut += ((dce.kv) * (dce.v_error));
-//	dce.i_dec  = (dce.i_mut >> 7);
-//	dce.i_mut -= (dce.i_dec << 7);
-//	dce.oi    += (dce.i_dec);
+	dce.i_mut += ((dce.ki) * (dce.p_error));
+	dce.i_mut += ((dce.kv) * (dce.v_error));
+	dce.i_dec  = (dce.i_mut >> 7);
+	dce.i_mut -= (dce.i_dec << 7);
+	dce.oi    += (dce.i_dec);
 	// ==== 增加：误差分离逻辑 ====
 	// 只有当位置误差小于 50 个脉冲（快到位了），才开始累积积分消除静差
 	if (abs(dce.p_error) < 50) {
@@ -314,20 +314,20 @@ void Control_DCE_To_Electric(int32_t _location, int32_t _speed)
 	else if(dce.oi < (-(Current_Rated_Current << 10)))	dce.oi = (-(Current_Rated_Current << 10));	//限制为额定电流 * 1024
 	//od输出计算
 	dce.od = ((dce.kd) * (dce.v_error));
-//	if(abs(dce.p_error) < 10)  //减弱微分作用
-//		{ 
-//        dce.od = ((dce.kd / 4) * (dce.v_error)); 
-//    } else {
-//        dce.od = ((dce.kd) * (dce.v_error));
-//    }
-//	//综合输出计算
-	dce.out = (dce.op + dce.oi + dce.od) >> 10;
-		#define POSITION_DEADZONE 3   //添加死区
-    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
-        dce.out = 0;
-        // 可选: 清除积分项防止累积
-         dce.i_mut = 0; dce.oi = 0;
+	if(abs(dce.p_error) < 10)  //减弱微分作用
+		{ 
+        dce.od = ((dce.kd / 4) * (dce.v_error)); 
+    } else {
+        dce.od = ((dce.kd) * (dce.v_error));
     }
+	//综合输出计算
+	dce.out = (dce.op + dce.oi + dce.od) >> 10;
+//		#define POSITION_DEADZONE 3   //添加死区
+//    if(abs(dce.p_error) <= POSITION_DEADZONE && abs(motor_control.est_speed) < 50) {
+//        dce.out = 0;
+//        // 可选: 清除积分项防止累积
+//         dce.i_mut = 0; dce.oi = 0;
+//    }
 	if(dce.out > 			Current_Rated_Current)		dce.out =  Current_Rated_Current;
 	else if(dce.out < -Current_Rated_Current)		dce.out = -Current_Rated_Current;
 
@@ -648,7 +648,9 @@ void Motor_LimitFinder_Loop(void)
             if (limit_finder.timer > 50 || motor_control.state == Control_State_Finish) {
                 // 全部完成
                 limit_finder.state = LIMIT_FIND_DONE;
-							
+//							if(limit_finder.min_pos_raw<0&&limit_finder.max_pos_raw>0)
+//							{
+//							}
 //							Motor_Control_SetMotorMode(Control_Mode_Stop);
 //		          motor_control.mode_run = Control_Mode_Stop	;
 			         // limit_finder.state = LIMIT_FIND_IDLE; // 中断寻找状态

@@ -2,6 +2,7 @@
 #include <string.h>
 #include "loop.h"
 #include "motor_control.h"
+#include "control_config.h"
 #include "uart_mixed.h"
 extern void Motor_Control_Write_Goal_Speed(int32_t speed);
 extern void Motor_LimitFinder_Start(void);
@@ -49,10 +50,10 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
     int32_t val32;
     switch(reg_addr)
     {
-        case REG_GOAL_SPEED_L:
+        case REG_GOAL_POSITION_L:
             // 当低16位被写入时，组合高16位一起生效
-            val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_SPEED_H], Modbus_RegPool[REG_GOAL_SPEED_L]);
-            Motor_Control_Write_Goal_Speed(val32);
+            val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_POSITION_H], Modbus_RegPool[REG_GOAL_POSITION_L]);
+            Motor_Control_Write_Goal_Location(val32);
             break;
             
         case REG_GOAL_ACCEL_L:
@@ -62,12 +63,14 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
             
         case REG_LEFT_LIMIT_L:
             val32 = Combine_To_Int32(Modbus_RegPool[REG_LEFT_LIMIT_H], Modbus_RegPool[REG_LEFT_LIMIT_L]);
-            // limit_finder.safe_min_pos = val32; // 赋值给你的极限管理结构体
+				    if(val32>(limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST))
+						{ limit_finder.safe_min_pos = val32;}
             break;
             
         case REG_RIGHT_LIMIT_L:
             val32 = Combine_To_Int32(Modbus_RegPool[REG_RIGHT_LIMIT_H], Modbus_RegPool[REG_RIGHT_LIMIT_L]);
-            // limit_finder.safe_max_pos = val32; 
+				    if(val32<(limit_finder.max_pos_raw + LIMIT_BACKOFF_DIST))
+						{limit_finder.safe_max_pos = val32; }
             break;
             
         case REG_CONTROL_WORD:
@@ -79,6 +82,9 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
                 Modbus_RegPool[REG_CONTROL_WORD] = 0;
             }
             break;
+				case REG_SON_OFF:
+					   motor_control.mode_run = Control_Mode_Stop;
+				    break;
     }
 }
 
@@ -197,7 +203,12 @@ void Modbus_Update_Feedback(void)
     
     Modbus_RegPool[REG_CURRENT_POS_H] = (uint16_t)(current_pos >> 16);
     Modbus_RegPool[REG_CURRENT_POS_L] = (uint16_t)(current_pos & 0xFFFF);
+	  Modbus_RegPool[REG_LEFT_LIMIT_H]=(uint16_t )(limit_finder.safe_min_pos>>16);
+	  Modbus_RegPool[REG_LEFT_LIMIT_L]=(uint16_t)(limit_finder.safe_min_pos&0xffff);
+	  Modbus_RegPool[REG_RIGHT_LIMIT_H]=(uint16_t )(limit_finder.safe_max_pos>>16);
+	  Modbus_RegPool[REG_RIGHT_LIMIT_L]=(uint16_t)(limit_finder.safe_max_pos&0xffff);
+	
     
     // 如果有状态变量，也可以顺便更新
-    // Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
+    Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
 }

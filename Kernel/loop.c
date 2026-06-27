@@ -139,7 +139,7 @@ void time_second_20ms_serve(void)
 */
 void time_second_50ms_serve(void)
 {
-    Modbus_Update_Feedback();
+    
 }
 
 /**
