@@ -1278,9 +1278,10 @@ Section Cross References
     modbus_slave.o(.text.Modbus_Receive_Task) refers to modbus_slave.o(.text.Modbus_Hardware_Transmit) for Modbus_Hardware_Transmit
     modbus_slave.o(.text.Modbus_Receive_Task) refers to modbus_slave.o(.bss.Modbus_TxBuf) for Modbus_TxBuf
     modbus_slave.o(.text.Modbus_Receive_Task) refers to modbus_slave.o(.bss.Modbus_RegPool) for Modbus_RegPool
-    modbus_slave.o(.text.Modbus_Receive_Task) refers to motor_control.o(.bss..L_MergedGlobals) for limit_finder
     modbus_slave.o(.ARM.exidx.text.Modbus_Receive_Task) refers to modbus_slave.o(.text.Modbus_Receive_Task) for [Anonymous Symbol]
     modbus_slave.o(.ARM.exidx.text.Modbus_CRC16) refers to modbus_slave.o(.text.Modbus_CRC16) for [Anonymous Symbol]
+    modbus_slave.o(.text.Modbus_Execute_Action) refers to motor_control.o(.text.Motor_Control_Clear_Stall) for Motor_Control_Clear_Stall
+    modbus_slave.o(.text.Modbus_Execute_Action) refers to motor_control.o(.text.Motor_Control_SetMotorMode) for Motor_Control_SetMotorMode
     modbus_slave.o(.text.Modbus_Execute_Action) refers to motor_control.o(.text.Motor_Control_Write_Goal_Location) for Motor_Control_Write_Goal_Location
     modbus_slave.o(.text.Modbus_Execute_Action) refers to location_tracker.o(.text.Location_Tracker_Set_UpAcc) for Location_Tracker_Set_UpAcc
     modbus_slave.o(.text.Modbus_Execute_Action) refers to location_tracker.o(.text.Location_Tracker_Set_DownAcc) for Location_Tracker_Set_DownAcc
@@ -3127,24 +3128,24 @@ Image Symbol Table
     [Anonymous Symbol]                       0x08002ac4   Section        0  location_tracker.o(.text.Location_Tracker_NewTask)
     [Anonymous Symbol]                       0x08002ad4   Section        0  location_tracker.o(.text.Location_Tracker_Set_Default)
     __arm_cp.3_1                             0x08002ae8   Number         4  location_tracker.o(.text.Location_Tracker_Set_Default)
-    [Anonymous Symbol]                       0x08002aec   Section        0  location_tracker.o(.text.Location_Tracker_Set_DownAcc)
-    [Anonymous Symbol]                       0x08002b20   Section        0  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
-    __arm_cp.1_0                             0x08002b3c   Number         4  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
-    __arm_cp.1_1                             0x08002b40   Number         4  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
-    [Anonymous Symbol]                       0x08002b44   Section        0  loop_it.o(.text.LoopIT_Priority_Overlay)
-    [Anonymous Symbol]                       0x08002b60   Section        0  loop_it.o(.text.LoopIT_SysTick_20KHz)
-    __arm_cp.0_0                             0x08002b78   Number         4  loop_it.o(.text.LoopIT_SysTick_20KHz)
-    __arm_cp.0_1                             0x08002b7c   Number         4  loop_it.o(.text.LoopIT_SysTick_20KHz)
-    [Anonymous Symbol]                       0x08002b80   Section        0  stm32f1xx_it.o(.text.MemManage_Handler)
-    Modbus_CRC16                             0x08002b85   Thumb Code    60  modbus_slave.o(.text.Modbus_CRC16)
-    [Anonymous Symbol]                       0x08002b84   Section        0  modbus_slave.o(.text.Modbus_CRC16)
-    __arm_cp.1_0                             0x08002bbc   Number         4  modbus_slave.o(.text.Modbus_CRC16)
-    Modbus_Execute_Action                    0x08002bc1   Thumb Code   192  modbus_slave.o(.text.Modbus_Execute_Action)
-    [Anonymous Symbol]                       0x08002bc0   Section        0  modbus_slave.o(.text.Modbus_Execute_Action)
-    __arm_cp.2_3                             0x08002c70   Number         4  modbus_slave.o(.text.Modbus_Execute_Action)
-    [Anonymous Symbol]                       0x08002c74   Section        0  modbus_slave.o(.text.Modbus_Hardware_Transmit)
-    __arm_cp.3_0                             0x08002c80   Number         4  modbus_slave.o(.text.Modbus_Hardware_Transmit)
-    [Anonymous Symbol]                       0x08002c84   Section        0  modbus_slave.o(.text.Modbus_Receive_Task)
+    __arm_cp.3_2                             0x08002aec   Number         4  location_tracker.o(.text.Location_Tracker_Set_Default)
+    [Anonymous Symbol]                       0x08002af0   Section        0  location_tracker.o(.text.Location_Tracker_Set_DownAcc)
+    [Anonymous Symbol]                       0x08002b24   Section        0  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
+    __arm_cp.1_0                             0x08002b40   Number         4  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
+    __arm_cp.1_1                             0x08002b44   Number         4  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
+    [Anonymous Symbol]                       0x08002b48   Section        0  loop_it.o(.text.LoopIT_Priority_Overlay)
+    [Anonymous Symbol]                       0x08002b64   Section        0  loop_it.o(.text.LoopIT_SysTick_20KHz)
+    __arm_cp.0_0                             0x08002b7c   Number         4  loop_it.o(.text.LoopIT_SysTick_20KHz)
+    __arm_cp.0_1                             0x08002b80   Number         4  loop_it.o(.text.LoopIT_SysTick_20KHz)
+    [Anonymous Symbol]                       0x08002b84   Section        0  stm32f1xx_it.o(.text.MemManage_Handler)
+    Modbus_CRC16                             0x08002b89   Thumb Code    60  modbus_slave.o(.text.Modbus_CRC16)
+    [Anonymous Symbol]                       0x08002b88   Section        0  modbus_slave.o(.text.Modbus_CRC16)
+    __arm_cp.1_0                             0x08002bc0   Number         4  modbus_slave.o(.text.Modbus_CRC16)
+    Modbus_Execute_Action                    0x08002bc5   Thumb Code   196  modbus_slave.o(.text.Modbus_Execute_Action)
+    [Anonymous Symbol]                       0x08002bc4   Section        0  modbus_slave.o(.text.Modbus_Execute_Action)
+    [Anonymous Symbol]                       0x08002c7c   Section        0  modbus_slave.o(.text.Modbus_Hardware_Transmit)
+    __arm_cp.3_0                             0x08002c88   Number         4  modbus_slave.o(.text.Modbus_Hardware_Transmit)
+    [Anonymous Symbol]                       0x08002c8c   Section        0  modbus_slave.o(.text.Modbus_Receive_Task)
     __arm_cp.0_0                             0x08002dc0   Number         4  modbus_slave.o(.text.Modbus_Receive_Task)
     [Anonymous Symbol]                       0x08002dc4   Section        0  loop.o(.text.Modbus_Rx_Callback_Wrapper)
     [Anonymous Symbol]                       0x08002dc8   Section        0  modbus_slave.o(.text.Modbus_Update_Feedback)
@@ -3542,13 +3543,13 @@ Image Symbol Table
     Location_Tracker_Init                    0x08002a8d   Thumb Code    68  location_tracker.o(.text.Location_Tracker_Init)
     Location_Tracker_NewTask                 0x08002ac5   Thumb Code    20  location_tracker.o(.text.Location_Tracker_NewTask)
     Location_Tracker_Set_Default             0x08002ad5   Thumb Code    32  location_tracker.o(.text.Location_Tracker_Set_Default)
-    Location_Tracker_Set_DownAcc             0x08002aed   Thumb Code    60  location_tracker.o(.text.Location_Tracker_Set_DownAcc)
-    Location_Tracker_Set_UpAcc               0x08002b21   Thumb Code    36  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
-    LoopIT_Priority_Overlay                  0x08002b45   Thumb Code    28  loop_it.o(.text.LoopIT_Priority_Overlay)
-    LoopIT_SysTick_20KHz                     0x08002b61   Thumb Code    32  loop_it.o(.text.LoopIT_SysTick_20KHz)
-    MemManage_Handler                        0x08002b81   Thumb Code     2  stm32f1xx_it.o(.text.MemManage_Handler)
-    Modbus_Hardware_Transmit                 0x08002c75   Thumb Code    16  modbus_slave.o(.text.Modbus_Hardware_Transmit)
-    Modbus_Receive_Task                      0x08002c85   Thumb Code   328  modbus_slave.o(.text.Modbus_Receive_Task)
+    Location_Tracker_Set_DownAcc             0x08002af1   Thumb Code    60  location_tracker.o(.text.Location_Tracker_Set_DownAcc)
+    Location_Tracker_Set_UpAcc               0x08002b25   Thumb Code    36  location_tracker.o(.text.Location_Tracker_Set_UpAcc)
+    LoopIT_Priority_Overlay                  0x08002b49   Thumb Code    28  loop_it.o(.text.LoopIT_Priority_Overlay)
+    LoopIT_SysTick_20KHz                     0x08002b65   Thumb Code    32  loop_it.o(.text.LoopIT_SysTick_20KHz)
+    MemManage_Handler                        0x08002b85   Thumb Code     2  stm32f1xx_it.o(.text.MemManage_Handler)
+    Modbus_Hardware_Transmit                 0x08002c7d   Thumb Code    16  modbus_slave.o(.text.Modbus_Hardware_Transmit)
+    Modbus_Receive_Task                      0x08002c8d   Thumb Code   316  modbus_slave.o(.text.Modbus_Receive_Task)
     Modbus_Rx_Callback_Wrapper               0x08002dc5   Thumb Code     4  loop.o(.text.Modbus_Rx_Callback_Wrapper)
     Modbus_Update_Feedback                   0x08002dc9   Thumb Code    76  modbus_slave.o(.text.Modbus_Update_Feedback)
     Motor_Control_AdvanceCompen              0x08002e15   Thumb Code   212  motor_control.o(.text.Motor_Control_AdvanceCompen)
@@ -3814,17 +3815,17 @@ Memory Map of the image
     0x0800291c   0x0800291c   0x00000170   Code   RO         1619    .text.Location_Tracker_Capture_Goal  location_tracker.o
     0x08002a8c   0x08002a8c   0x00000038   Code   RO         1615    .text.Location_Tracker_Init  location_tracker.o
     0x08002ac4   0x08002ac4   0x00000010   Code   RO         1617    .text.Location_Tracker_NewTask  location_tracker.o
-    0x08002ad4   0x08002ad4   0x00000018   Code   RO         1613    .text.Location_Tracker_Set_Default  location_tracker.o
-    0x08002aec   0x08002aec   0x00000034   Code   RO         1611    .text.Location_Tracker_Set_DownAcc  location_tracker.o
-    0x08002b20   0x08002b20   0x00000024   Code   RO         1609    .text.Location_Tracker_Set_UpAcc  location_tracker.o
-    0x08002b44   0x08002b44   0x0000001c   Code   RO         1778    .text.LoopIT_Priority_Overlay  loop_it.o
-    0x08002b60   0x08002b60   0x00000020   Code   RO         1774    .text.LoopIT_SysTick_20KHz  loop_it.o
-    0x08002b80   0x08002b80   0x00000002   Code   RO          116    .text.MemManage_Handler  stm32f1xx_it.o
-    0x08002b82   0x08002b82   0x00000002   PAD
-    0x08002b84   0x08002b84   0x0000003c   Code   RO         1451    .text.Modbus_CRC16  modbus_slave.o
-    0x08002bc0   0x08002bc0   0x000000b4   Code   RO         1453    .text.Modbus_Execute_Action  modbus_slave.o
-    0x08002c74   0x08002c74   0x00000010   Code   RO         1455    .text.Modbus_Hardware_Transmit  modbus_slave.o
-    0x08002c84   0x08002c84   0x00000140   Code   RO         1449    .text.Modbus_Receive_Task  modbus_slave.o
+    0x08002ad4   0x08002ad4   0x0000001c   Code   RO         1613    .text.Location_Tracker_Set_Default  location_tracker.o
+    0x08002af0   0x08002af0   0x00000034   Code   RO         1611    .text.Location_Tracker_Set_DownAcc  location_tracker.o
+    0x08002b24   0x08002b24   0x00000024   Code   RO         1609    .text.Location_Tracker_Set_UpAcc  location_tracker.o
+    0x08002b48   0x08002b48   0x0000001c   Code   RO         1778    .text.LoopIT_Priority_Overlay  loop_it.o
+    0x08002b64   0x08002b64   0x00000020   Code   RO         1774    .text.LoopIT_SysTick_20KHz  loop_it.o
+    0x08002b84   0x08002b84   0x00000002   Code   RO          116    .text.MemManage_Handler  stm32f1xx_it.o
+    0x08002b86   0x08002b86   0x00000002   PAD
+    0x08002b88   0x08002b88   0x0000003c   Code   RO         1451    .text.Modbus_CRC16  modbus_slave.o
+    0x08002bc4   0x08002bc4   0x000000b8   Code   RO         1453    .text.Modbus_Execute_Action  modbus_slave.o
+    0x08002c7c   0x08002c7c   0x00000010   Code   RO         1455    .text.Modbus_Hardware_Transmit  modbus_slave.o
+    0x08002c8c   0x08002c8c   0x00000138   Code   RO         1449    .text.Modbus_Receive_Task  modbus_slave.o
     0x08002dc4   0x08002dc4   0x00000004   Code   RO         1753    .text.Modbus_Rx_Callback_Wrapper  loop.o
     0x08002dc8   0x08002dc8   0x0000004c   Code   RO         1457    .text.Modbus_Update_Feedback  modbus_slave.o
     0x08002e14   0x08002e14   0x000000d4   Code   RO         1565    .text.Motor_Control_AdvanceCompen  motor_control.o
@@ -3982,11 +3983,11 @@ Image component sizes
        412         20          0          0          0       4173   gpio.o
        330         16          0          0         16       2214   hw_elec.o
         76          4          0          0         28       1232   location_interp.o
-       552         12          0          0         56       2762   location_tracker.o
+       556         16          0          0         56       2760   location_tracker.o
        524         40          0          1         77       4051   loop.o
        152         20          0          0         28       2610   loop_it.o
        110          0          0          0          0       1872   main.o
-       652         44          0          0        154       4010   modbus_slave.o
+       648         40          0          0        154       4002   modbus_slave.o
       2452        250          0          0        240      11046   motor_control.o
        328         12          0          0         56       2414   move_reconstruct.o
        304         20          0          4         12       2354   mt6816.o
@@ -4016,7 +4017,7 @@ Image component sizes
        556        112          0          0        212       6581   usart.o
 
     ----------------------------------------------------------------------
-     17856       1016       2342         36       4916     232384   Object Totals
+     17856       1016       2342         36       4916     232374   Object Totals
          0          0         32          0          0          0   (incl. Generated)
         42          0          0          3         13          0   (incl. Padding)
 
@@ -4064,8 +4065,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     18418       1032       2342         36       4916     232448   Grand Totals
-     18418       1032       2342         36       4916     232448   ELF Image Totals
+     18418       1032       2342         36       4916     232438   Grand Totals
+     18418       1032       2342         36       4916     232438   ELF Image Totals
      18418       1032       2342         36          0          0   ROM Totals
 
 ==============================================================================

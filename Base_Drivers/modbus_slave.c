@@ -51,16 +51,18 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
         case REG_GOAL_POSITION_L:
             // 当低16位被写入时，组合高16位一起生效
             val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_POSITION_H], Modbus_RegPool[REG_GOAL_POSITION_L]);
+				    Motor_Control_Clear_Stall();
+				    motor_control.mode_run = Motor_Mode_Digital_Location;
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
             Motor_Control_Write_Goal_Location(val32);
             break;
             
         case REG_GOAL_ACCEL_L:
             val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_ACCEL_H], Modbus_RegPool[REG_GOAL_ACCEL_L]);
-				    if(val32<=Move_Rated_UpAcc&&val32<=Move_Rated_DownAcc)
-						{Location_Tracker_Set_UpAcc(val32);
+				    
+						Location_Tracker_Set_UpAcc(val32);
 				    Location_Tracker_Set_DownAcc(val32);
-						}
-            
+				      
             break;
             
         case REG_LEFT_LIMIT_L:
@@ -130,7 +132,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
             tx_len = 3;
             
             // 每次读之前，可以把系统真实状态更新到寄存器池
-             Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
+             //Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
             
             for (uint16_t i = 0; i < read_cnt; i++) {
                 Modbus_TxBuf[tx_len++] = Modbus_RegPool[start_addr + i] >> 8;
