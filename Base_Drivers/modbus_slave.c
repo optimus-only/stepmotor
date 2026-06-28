@@ -4,6 +4,7 @@
 #include "motor_control.h"
 #include "control_config.h"
 #include "uart_mixed.h"
+#include "Location_Tracker.h"
 extern void Motor_Control_Write_Goal_Speed(int32_t speed);
 extern void Motor_LimitFinder_Start(void);
 
@@ -12,9 +13,6 @@ extern void Motor_LimitFinder_Start(void);
 uint16_t Modbus_RegPool[MODBUS_REG_NUM] = {0};
 
 uint8_t Modbus_TxBuf[MODBUS_TX_BUF_SIZE];
-
-// 全局变量：由于加速度原来是宏定义，你需要把它改成全局变量，并在这里声明
-int32_t Dynamic_Move_Acc = 3000 * 32; // 默认值
 
 uint8_t Debug_Error_Frame[16]; 
 uint16_t Debug_Error_Len = 0;
@@ -58,7 +56,11 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
             
         case REG_GOAL_ACCEL_L:
             val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_ACCEL_H], Modbus_RegPool[REG_GOAL_ACCEL_L]);
-            Dynamic_Move_Acc = val32; // 更新你系统中计算轨迹用的加速度变量
+				    if(val32<=Move_Rated_UpAcc&&val32<=Move_Rated_DownAcc)
+						{Location_Tracker_Set_UpAcc(val32);
+				    Location_Tracker_Set_DownAcc(val32);
+						}
+            
             break;
             
         case REG_LEFT_LIMIT_L:
@@ -207,7 +209,8 @@ void Modbus_Update_Feedback(void)
 	  Modbus_RegPool[REG_LEFT_LIMIT_L]=(uint16_t)(limit_finder.safe_min_pos&0xffff);
 	  Modbus_RegPool[REG_RIGHT_LIMIT_H]=(uint16_t )(limit_finder.safe_max_pos>>16);
 	  Modbus_RegPool[REG_RIGHT_LIMIT_L]=(uint16_t)(limit_finder.safe_max_pos&0xffff);
-	
+	  Modbus_RegPool[REG_GOAL_ACCEL_L]=(uint16_t)(location_tck.up_acc & 0xffff);
+	  Modbus_RegPool[REG_GOAL_ACCEL_H]=(uint16_t)(location_tck.up_acc>>16);
     
     // 如果有状态变量，也可以顺便更新
     Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;

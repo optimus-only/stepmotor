@@ -14,7 +14,7 @@
 #define REG_GOAL_POSITION_H      0x0000  // 目标位置 高16位
 #define REG_GOAL_POSITION_L      0x0001  // 目标位置 低16位
 #define REG_GOAL_ACCEL_H      0x0002  // 目标加速度 高16位
-#define REG_GOAL_ACCEL_L      0x0003  // 目标加速度 低16位
+#define REG_GOAL_ACCEL_L      0x0003  // 目标加速度 低16位  最大加速度3000r/ss
 #define REG_LEFT_LIMIT_H      0x0004  // 左极限 高16位
 #define REG_LEFT_LIMIT_L      0x0005  // 左极限 低16位
 #define REG_RIGHT_LIMIT_H     0x0006  // 右极限 高16位
