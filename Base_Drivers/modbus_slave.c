@@ -215,5 +215,6 @@ void Modbus_Update_Feedback(void)
 	  Modbus_RegPool[REG_GOAL_ACCEL_H]=(uint16_t)(location_tck.up_acc>>16);
     
     // 如果有状态变量，也可以顺便更新
-    Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
+   // Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
+	   Modbus_RegPool[REG_STATUS_WORD] =final_move_time;
 }

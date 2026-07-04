@@ -76,13 +76,9 @@ static uint32_t time_second_10ms = 0;
 static uint32_t time_second_20ms = 0;
 static uint32_t time_second_50ms = 0;
 static uint32_t time_second_100ms = 0;
-uint16_t TempAngleNow=0,TempAngleLast=0;
-CAN_TxHeaderTypeDef tx_header;
-uint32_t tx_mailbox; // 用于返回发送邮箱编号
-uint8_t tx_data[8];  // CAN帧最多承载8字节数据
 //	
 uint32_t start_move_tick = 0;
-uint32_t final_move_time = 0;
+uint32_t final_move_time =0;
 bool is_waiting_for_finish = false;
 bool time_ready_to_read = false;
 /* USER CODE BEGIN 自动运行相关变量 */
@@ -100,29 +96,31 @@ void time_second_10ms_serve(void)
 	if(limit_finder.state != LIMIT_FIND_DONE) 
     {
         Motor_LimitFinder_Loop(); 
+			return;
     }
 
-//    // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
-//    if (is_auto_run) {
-//        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
-//        if (HAL_GetTick() - last_auto_run_tick >=100) {
-//            last_auto_run_tick = HAL_GetTick(); // 更新计时器
-//            
-//            Motor_Control_Clear_Stall();
-//            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-//            
-//            if (auto_run_target_max) {
-//                // 当前正走向 Max，时间到了改为走向 Min
-//                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-//                auto_run_target_max = false;
-//            } else {
-//                // 当前正走向 Min，时间到了改为走向 Max
-//                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-//                auto_run_target_max = true;
-//            }
-//            motor_control.mode_run = Motor_Mode_Digital_Location;
-//        }
-//    }
+    // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
+    if (is_auto_run) {
+        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
+        if (HAL_GetTick() - last_auto_run_tick >=500) {
+            last_auto_run_tick = HAL_GetTick(); // 更新计时器
+            Motor_Control_Clear_Stall();
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+            
+            if (auto_run_target_max) {
+                // 当前正走向 Max，时间到了改为走向 Min
+                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+							 start_move_tick=HAL_GetTick();
+                auto_run_target_max = false;
+            } else {
+                // 当前正走向 Min，时间到了改为走向 Max
+                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+							  start_move_tick=HAL_GetTick();
+                auto_run_target_max = true;
+            }
+            motor_control.mode_run = Motor_Mode_Digital_Location;
+        }
+    }
 }
 
 /**
@@ -146,27 +144,8 @@ void time_second_50ms_serve(void)
 * @brief 副时钟100ms执行
 */
 void time_second_100ms_serve(void)
-{
-             TempAngleNow=mt6816.angle_data;
-		      tx_data[0]=limit_finder.safe_min_pos;
-		      tx_data[1]=limit_finder.safe_min_pos>>8;
-	        tx_data[2]=motor_control.real_location;
-	        tx_data[3]=motor_control.real_location>>8;
-	        tx_data[4]=limit_finder.safe_max_pos;
-	        tx_data[5]=limit_finder.safe_max_pos>>8;
-	        tx_data[6]=limit_finder.safe_max_pos>>16;
-        	tx_data[7]=final_move_time;
+{            
           Modbus_Update_Feedback();
-if(time_ready_to_read) {
-              time_ready_to_read = false; // 清除读取标志以防重复读取
-                    // 3. 调用HAL库函数发送
-          if(HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data, &tx_mailbox) != HAL_OK) {
-       
-           // Error_Handler();
-							HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,0);
-                                } 
-              
-          }
 
      // ------------------- 单按键复用逻辑开始 -------------------
     
@@ -189,21 +168,27 @@ if(time_ready_to_read) {
         // 情况 2: 如果已经完成极限寻找 -> 在两个极限间来回切换
         else 
         {
-            Motor_Control_Clear_Stall();
-            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-            
-            if (target_is_max) {
-                // 如果目标是 Max，则发送前往 Max 的指令
-                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-            } else {
-                // 如果目标是 Min，则发送前往 Min 的指令
-                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-            }
-            
-            motor_control.mode_run = Motor_Mode_Digital_Location;
-            
-            // 翻转标志位，为了下一次按下时能走向相反的方向
-            target_is_max = !target_is_max; 
+//            Motor_Control_Clear_Stall();
+//            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//            
+//            if (target_is_max) {
+//                // 如果目标是 Max，则发送前往 Max 的指令
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+//            } else {
+//                // 如果目标是 Min，则发送前往 Min 的指令
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+//            }
+//            
+//            motor_control.mode_run = Motor_Mode_Digital_Location;
+//            
+//            // 翻转标志位，为了下一次按下时能走向相反的方向
+//            target_is_max = !target_is_max; 
+					if(is_auto_run)
+					{
+					   is_auto_run=0;
+					}
+					else
+						is_auto_run=1;
         }
     }
     
@@ -234,12 +219,12 @@ void loop_second_base_1ms(void)
 	time_1ms_count++;
 	time_second_1ms++;
 	
-//	// --------- 增加部分: 检查到位逻辑 ---------
-//    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
-//        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
-//        is_waiting_for_finish = false;                     // 关闭等待
-//        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
-//    }
+	// --------- 增加部分: 检查到位逻辑 ---------
+    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
+        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
+        is_waiting_for_finish = false;                     // 关闭等待
+        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
+    }
 		
 	if(!(time_second_1ms % 10))		{time_second_10ms++;		}
 	if(!(time_second_1ms % 20))		{time_second_20ms++;		}

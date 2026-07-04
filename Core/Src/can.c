@@ -179,7 +179,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 							
 							
                 motor_control.state = Control_State_Running; 
-                start_move_tick = HAL_GetTick();
+              //  start_move_tick = HAL_GetTick();
                 is_waiting_for_finish = true;
                 time_ready_to_read = false;
 							
