@@ -154,7 +154,7 @@
           <Type>0</Type>
           <LineNumber>90</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134228868</Address>
+          <Address>134230542</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -170,7 +170,7 @@
           <Type>0</Type>
           <LineNumber>97</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134228956</Address>
+          <Address>134230656</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -186,7 +186,7 @@
           <Type>0</Type>
           <LineNumber>98</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134228960</Address>
+          <Address>134230660</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -383,7 +383,7 @@
         <Ww>
           <count>17</count>
           <WinNumber>1</WinNumber>
-          <ItemText>final_move_time</ItemText>
+          <ItemText>final_move_time,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>18</count>

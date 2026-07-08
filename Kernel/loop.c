@@ -102,20 +102,22 @@ void time_second_10ms_serve(void)
     // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
     if (is_auto_run) {
         // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
-        if (HAL_GetTick() - last_auto_run_tick >=500) {
+        if (HAL_GetTick() - last_auto_run_tick >=20) {
+					
             last_auto_run_tick = HAL_GetTick(); // 更新计时器
             Motor_Control_Clear_Stall();
             Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-            
+            is_waiting_for_finish = true;
+            time_ready_to_read = false;
+					  start_move_tick=HAL_GetTick();
+					
             if (auto_run_target_max) {
                 // 当前正走向 Max，时间到了改为走向 Min
                 Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-							 start_move_tick=HAL_GetTick();
                 auto_run_target_max = false;
             } else {
                 // 当前正走向 Min，时间到了改为走向 Max
                 Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-							  start_move_tick=HAL_GetTick();
                 auto_run_target_max = true;
             }
             motor_control.mode_run = Motor_Mode_Digital_Location;

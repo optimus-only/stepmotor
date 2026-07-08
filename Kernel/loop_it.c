@@ -95,7 +95,7 @@ void SysTick_Handler(void)
 		//编码器数据采集
 		REIN_MT6816_Get_AngleData();
 		//电源数据采集
-	  //Power_Detection_Run();
+//	  Power_Detection_Run();
 		
 //		//运动控制
 		if(encode_cali.trigger)	Calibration_Interrupt_Callback();	//校准器中断回调

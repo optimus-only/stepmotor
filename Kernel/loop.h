@@ -47,7 +47,7 @@ extern "C" {
 #endif
 
 #include "kernel_port.h"
-extern uint32_t start_move_tick;
+ extern uint32_t start_move_tick;
 extern uint32_t final_move_time;
 extern bool is_waiting_for_finish;
 extern bool time_ready_to_read;
