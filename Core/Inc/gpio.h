@@ -56,8 +56,9 @@ void REIN_GPIO_HwElec_Init(void);   	//GPIO初始化(HwElec)
 /********** MT6816 **********/
 void REIN_GPIO_MT6816_ABZ_Init(void);  //GPIO初始化(MT6816_ABZ)
 void REIN_GPIO_MT6816_SPI_Init(void);  //GPIO初始化(MT6916_SPI)
-void GPIO_Status_Led_Init(void);
 
+void GPIO_Status_Led_Init(void);
+void GPIO_Status_Led_Blink(uint16_t num);
 /********** SIGNAL **********/
 void REIN_GPIO_SIGNAL_COUNT_Init(void);		//GPIO初始化(SIGNAL_COUNT)
 void REIN_GPIO_SIGNAL_COUNT_DeInit(void);	//GPIO清理(SIGNAL_COUNT)

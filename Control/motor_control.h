@@ -52,7 +52,6 @@ extern "C" {
 /****************************************  直接控制(电流控制)  ****************************************/
 /****************************************  直接控制(电流控制)  ****************************************/
 void Control_Cur_To_Electric(int16_t current);		//电流输出
-
 /****************************************  PID控制(速度控制)  ****************************************/
 /****************************************  PID控制(速度控制)  ****************************************/
 typedef struct{
@@ -221,6 +220,7 @@ typedef struct{
 #define LIMIT_SEARCH_SPEED   (Move_Pulse_NUM * 1) 
 // 撞击限位后的回退安全距离 (默认1/10圈，即约36度)
 #define LIMIT_BACKOFF_DIST   (Move_Pulse_NUM / 99)
+
 typedef enum {
     LIMIT_FIND_IDLE = 0,
     LIMIT_FIND_START_POS,      // 开始正向寻找
@@ -257,10 +257,10 @@ void Motor_Control_SetDefault(void);								//控制模式参数恢复
 //数据写入
 void Motor_Control_Write_Goal_Location(int32_t value);//写入目标位置
 void Motor_Control_Write_Goal_Speed(int32_t value);		//写入目标速度
-void Motor_Control_Write_Goal_Current(int16_t value);	//写入目标电流
+void Motor_Control_Write_Goal_Current(int16_t value);	//写入目标电流 电流环控制
 void Motor_Control_Write_Goal_Disable(uint16_t value);//写入目标失能
 void Motor_Control_Write_Goal_Brake(uint16_t value);	//写入目标刹车
-
+void Motor_Control_Write_Realstic_Current(uint16_t value);//写入实际电流
 //任务执行
 void Motor_Control_Init(void);											//电机控制初始化
 void Motor_Control_Callback(void);									//控制器任务回调

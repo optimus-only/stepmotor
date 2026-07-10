@@ -660,7 +660,21 @@ void Motor_LimitFinder_Loop(void)
             break;
     }
 }
+/**
+  * @brief  更改最大电流
+  * @param  NULL
+  * @retval NULL
+**/
+void Motor_Control_Write_Realstic_Current(uint16_t value)
+{
 
+   if(value<2800)
+	 {
+//	   Current_Rated_Current=value;
+	 }
+
+
+}
 /**
   * @brief  控制器任务回调
   * @param  NULL
@@ -889,7 +903,7 @@ void Motor_Control_Callback(void)
 		if(motor_control.stall_time_us >= (1000 * 1000))	motor_control.stall_flag = true;
 		else																							motor_control.stall_time_us += CONTROL_PERIOD_US;
 	}
-	else if( (abs_out_electric >= (Current_Rated_Current*98/100))						//额定电流
+	else if( (abs_out_electric >= Current_Rated_Current)						//额定电流
 				&& (abs(motor_control.est_speed) < (Move_Pulse_NUM/5))		//低于1/5转/s
 	){
 		if(motor_control.stall_time_us >= (500 * 1000))	motor_control.stall_flag = true;
@@ -901,7 +915,7 @@ void Motor_Control_Callback(void)
 	}
 
 	//过载检测
-	if(abs_out_electric >= (Current_Rated_Current*98/100)){		//额定电流
+	if(abs_out_electric >= Current_Rated_Current){		//额定电流
 		if(motor_control.overload_time_us >= (100 * 1000))	motor_control.overload_flag = true;
 		else																								motor_control.overload_time_us += CONTROL_PERIOD_US;
 	}

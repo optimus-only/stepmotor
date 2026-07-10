@@ -303,4 +303,17 @@ void GPIO_Status_Led_Init()
 	HAL_GPIO_Init(Status_Led_GPIO_Port, &GPIO_InitStruct);
 
 }
+/**
+  * @brief  LED闪烁显示电机状态(Status_Led)
+  * @param  NULL
+  * @retval NULL
+*/
+void GPIO_Status_Led_Blink(uint16_t num)
+{
+   
 
+
+
+
+
+}

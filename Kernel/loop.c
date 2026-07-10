@@ -56,7 +56,6 @@
 //#include "signal_port.h"
 #include "motor_control.h"
 #include "encode_cali.h"
-
 //Debug
 #include "button.h"
 #include "Location_Tracker.h"
@@ -76,6 +75,7 @@ static uint32_t time_second_10ms = 0;
 static uint32_t time_second_20ms = 0;
 static uint32_t time_second_50ms = 0;
 static uint32_t time_second_100ms = 0;
+static uint32_t time_second_1s=0;
 //	
 uint32_t start_move_tick = 0;
 uint32_t final_move_time =0;
@@ -100,29 +100,29 @@ void time_second_10ms_serve(void)
     }
 
     // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
-    if (is_auto_run) {
-        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
-        if (HAL_GetTick() - last_auto_run_tick >=20) {
-					
-            last_auto_run_tick = HAL_GetTick(); // 更新计时器
-            Motor_Control_Clear_Stall();
-            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-            is_waiting_for_finish = true;
-            time_ready_to_read = false;
-					  start_move_tick=HAL_GetTick();
-					
-            if (auto_run_target_max) {
-                // 当前正走向 Max，时间到了改为走向 Min
-                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-                auto_run_target_max = false;
-            } else {
-                // 当前正走向 Min，时间到了改为走向 Max
-                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-                auto_run_target_max = true;
-            }
-            motor_control.mode_run = Motor_Mode_Digital_Location;
-        }
-    }
+//    if (is_auto_run) {
+//        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
+//        if (HAL_GetTick() - last_auto_run_tick >=20) {
+//					
+//            last_auto_run_tick = HAL_GetTick(); // 更新计时器
+//            Motor_Control_Clear_Stall();
+//            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//            is_waiting_for_finish = true;
+//            time_ready_to_read = false;
+//					  start_move_tick=HAL_GetTick();
+//					
+//            if (auto_run_target_max) {
+//                // 当前正走向 Max，时间到了改为走向 Min
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+//                auto_run_target_max = false;
+//            } else {
+//                // 当前正走向 Min，时间到了改为走向 Max
+//                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+//                auto_run_target_max = true;
+//            }
+//            motor_control.mode_run = Motor_Mode_Digital_Location;
+//        }
+//    }
 }
 
 /**
@@ -170,27 +170,27 @@ void time_second_100ms_serve(void)
         // 情况 2: 如果已经完成极限寻找 -> 在两个极限间来回切换
         else 
         {
-//            Motor_Control_Clear_Stall();
-//            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-//            
-//            if (target_is_max) {
-//                // 如果目标是 Max，则发送前往 Max 的指令
-//                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
-//            } else {
-//                // 如果目标是 Min，则发送前往 Min 的指令
-//                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
-//            }
-//            
-//            motor_control.mode_run = Motor_Mode_Digital_Location;
-//            
-//            // 翻转标志位，为了下一次按下时能走向相反的方向
-//            target_is_max = !target_is_max; 
-					if(is_auto_run)
-					{
-					   is_auto_run=0;
-					}
-					else
-						is_auto_run=1;
+            Motor_Control_Clear_Stall();
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+            
+            if (target_is_max) {
+                // 如果目标是 Max，则发送前往 Max 的指令
+                Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);
+            } else {
+                // 如果目标是 Min，则发送前往 Min 的指令
+                Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
+            }
+            
+            motor_control.mode_run = Motor_Mode_Digital_Location;
+            
+            // 翻转标志位，为了下一次按下时能走向相反的方向
+            target_is_max = !target_is_max; 
+//					if(is_auto_run)
+//					{
+//					   is_auto_run=0;
+//					}
+//					else
+//						is_auto_run=1;
         }
     }
     
@@ -200,6 +200,16 @@ void time_second_100ms_serve(void)
     // ------------------- 单按键复用逻辑结束 -------------------
 
 	 
+}
+
+/**
+* @brief 副时钟1s执行
+*/
+void time_second_1s_serve()
+{
+	 GPIO_PinState pin=HAL_GPIO_ReadPin(Status_Led_GPIO_Port,Status_Led);
+   HAL_GPIO_WritePin(Status_Led_GPIO_Port,Status_Led,!pin);
+	
 }
 	
 /**
@@ -211,6 +221,7 @@ void time_second_run(void)
 	if(time_second_20ms)		{time_second_20ms--;		time_second_20ms_serve();		}
 	if(time_second_50ms)		{time_second_50ms--;		time_second_50ms_serve();		}
 	if(time_second_100ms)		{time_second_100ms--;		time_second_100ms_serve();	}
+	if(time_second_1s)      {time_second_1s--;      time_second_1s_serve();     }
 }
 
 /**
@@ -222,17 +233,17 @@ void loop_second_base_1ms(void)
 	time_second_1ms++;
 	
 	// --------- 增加部分: 检查到位逻辑 ---------
-    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
-        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
-        is_waiting_for_finish = false;                     // 关闭等待
-        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
-    }
+//    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
+//        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
+//        is_waiting_for_finish = false;                     // 关闭等待
+//        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
+//    }
 		
 	if(!(time_second_1ms % 10))		{time_second_10ms++;		}
 	if(!(time_second_1ms % 20))		{time_second_20ms++;		}
 	if(!(time_second_1ms % 50))		{time_second_50ms++;		}
 	if(!(time_second_1ms % 100))	{time_second_100ms++;		}
-	if(!(time_second_1ms % 1000))	{time_second_1ms = 0;		}
+	if(!(time_second_1ms % 1000))	{time_second_1ms = 0;	time_second_1s++;	}
 }
 
 
@@ -269,8 +280,8 @@ void loop(void)
 	//基本外设初始化(Base_Drivers)(LOOP直接进行)
 	REIN_DMA_Init();
 //	REIN_ADC_Init();	
-	  REIN_UART_Modbus_Init();
-	 Uart_Mixed_Init(&muart1, Modbus_Rx_Callback_Wrapper, NULL);
+	REIN_UART_Modbus_Init();
+	Uart_Mixed_Init(&muart1, Modbus_Rx_Callback_Wrapper, NULL);
 	//基本外设初始化()
 	REIN_MT6816_Init();		//MT6816传感器初始化
 	REIN_HW_Elec_Init();	//硬件电流控制器

@@ -465,9 +465,9 @@ void Calibration_Loop_Callback(void)
 	}
 	else{
 		mt6816.rectify_valid = false;
-		Stockpile_Flash_Data_Empty(&stockpile_quick_cali);	//清除校准区数据
+		Stockpile_Flash_Data_Empty(&stockpile_quick_cali);	//
+		//
 	}
-	
 
 	motor_control.stall_flag = true;	//触发堵转保护,即校准后禁用运动控制
 	

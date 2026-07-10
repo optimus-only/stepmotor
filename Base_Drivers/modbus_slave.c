@@ -48,45 +48,40 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
     int32_t val32;
     switch(reg_addr)
     {
-        case REG_GOAL_POSITION_L:
-            // 当低16位被写入时，组合高16位一起生效
-            val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_POSITION_H], Modbus_RegPool[REG_GOAL_POSITION_L]);
-				    Motor_Control_Clear_Stall();
-				    motor_control.mode_run = Motor_Mode_Digital_Location;
-            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-            Motor_Control_Write_Goal_Location(val32);
+        case REG_GOAL_CURRENT:
+           val32=Modbus_RegPool[REG_GOAL_CURRENT];
+			    	Motor_Control_Write_Realstic_Current(val32);
             break;
             
-        case REG_GOAL_ACCEL_L:
-            val32 = Combine_To_Int32(Modbus_RegPool[REG_GOAL_ACCEL_H], Modbus_RegPool[REG_GOAL_ACCEL_L]);
-				    
-						Location_Tracker_Set_UpAcc(val32);
-				    Location_Tracker_Set_DownAcc(val32);
-				      
+        case REG_GOAL_ACCEL:
+            val32 = Modbus_RegPool[REG_GOAL_ACCEL]*Move_Pulse_NUM;
+				    if(val32<Move_Rated_UpAcc)
+						{
+							Location_Tracker_Set_UpAcc(val32);
+				      Location_Tracker_Set_DownAcc(val32);
+						} 
             break;
             
-        case REG_LEFT_LIMIT_L:
-            val32 = Combine_To_Int32(Modbus_RegPool[REG_LEFT_LIMIT_H], Modbus_RegPool[REG_LEFT_LIMIT_L]);
+        case REG_GOAL_INTERVAL :  
+//            val32=Modbus_RegPool[REG_GOAL_INTERVAL];					
+				    val32=(limit_finder.min_pos_raw+limit_finder.max_pos_raw-Modbus_RegPool[REG_GOAL_INTERVAL])/2;
 				    if(val32>(limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST))
 						{ limit_finder.safe_min_pos = val32;}
-            break;
-            
-        case REG_RIGHT_LIMIT_L:
-            val32 = Combine_To_Int32(Modbus_RegPool[REG_RIGHT_LIMIT_H], Modbus_RegPool[REG_RIGHT_LIMIT_L]);
-				    if(val32<(limit_finder.max_pos_raw + LIMIT_BACKOFF_DIST))
+						
+						val32=(limit_finder.min_pos_raw+limit_finder.max_pos_raw+Modbus_RegPool[REG_GOAL_INTERVAL])/2;
+				    if(val32<(limit_finder.max_pos_raw - LIMIT_BACKOFF_DIST))
 						{limit_finder.safe_max_pos = val32; }
             break;
             
-        case REG_CONTROL_WORD:
-            if (Modbus_RegPool[REG_CONTROL_WORD] == 0x0001) {
-                Motor_LimitFinder_Start(); // 启动找极限
-                Modbus_RegPool[REG_CONTROL_WORD] = 0; // 执行完后清零
-            } else if (Modbus_RegPool[REG_CONTROL_WORD] == 0x0002) {
-                Motor_Control_Write_Goal_Speed(0); // 停止
-                Modbus_RegPool[REG_CONTROL_WORD] = 0;
-            }
+        case REG_GOAL_SPEED :
+            val32=Modbus_RegPool[REG_GOAL_SPEED]*Move_Pulse_NUM;
+				    Location_Tracker_Set_MaxSpeed(val32);
             break;
-				case REG_SON_OFF:
+            
+//        case :
+//            
+//            break;
+				case REG_ENABLEOFF_TIME:
 					   motor_control.mode_run = Control_Mode_Stop;
 				    break;
     }
@@ -97,14 +92,6 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
 {
     if (rx_len < 8) return; // 帧太短
     if (rx_data[0] != MODBUS_SLAVE_ADDRESS) return; // 地址不匹配
-//    if (rx_data[0] != MODBUS_SLAVE_ADDRESS) 
-//    {
-//        Debug_Error_Len = rx_len;
-//        for(int i=0; i<rx_len && i<16; i++) {
-//            Debug_Error_Frame[i] = rx_data[i];
-//        }
-//        return; 
-//    }
     // 校验 CRC
     uint16_t crc_recv = (rx_data[rx_len - 1] << 8) | rx_data[rx_len - 2];
     uint16_t crc_calc = Modbus_CRC16(rx_data, rx_len - 2);
@@ -130,10 +117,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
             Modbus_TxBuf[1] = 0x03;
             Modbus_TxBuf[2] = read_cnt * 2; // 字节数
             tx_len = 3;
-            
-            // 每次读之前，可以把系统真实状态更新到寄存器池
-             //Modbus_RegPool[REG_STATUS_WORD] = limit_finder.state;
-            
+                  
             for (uint16_t i = 0; i < read_cnt; i++) {
                 Modbus_TxBuf[tx_len++] = Modbus_RegPool[start_addr + i] >> 8;
                 Modbus_TxBuf[tx_len++] = Modbus_RegPool[start_addr + i] & 0xFF;
@@ -194,27 +178,20 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
 // 实现底层的串口发送函数
 void Modbus_Hardware_Transmit(uint8_t *tx_data, uint16_t tx_len)
 {
-    // 调用 uart_mixed 库的触发发送函数
-    // 假设你的 Modbus 挂载在 muart1 (即 USART1) 上
-    // 注意：uart_mixed 中参数是 char*，所以需要做个类型强转
+  // 注意：uart_mixed 中参数是 char*，所以需要做个类型强转
     UART_Mixed_TxTrigger(&muart1, (char *)tx_data, tx_len);
 }
 
 void Modbus_Update_Feedback(void)
 {
-   
-    int32_t current_pos = motor_control.real_location;
+      
+    Modbus_RegPool[REG_GOAL_INTERVAL] = (uint16_t)(limit_finder.safe_max_pos-limit_finder.safe_min_pos);
+	  Modbus_RegPool[REG_GOAL_ACCEL]=(uint16_t)(location_tck.up_acc/Move_Pulse_NUM);
+	  Modbus_RegPool[REG_GOAL_CURRENT]=(uint16_t) Current_Rated_Current;
+	  Modbus_RegPool[REG_GOAL_SPEED]=(uint16_t)(location_tck.max_speed/Move_Pulse_NUM);
+	  Modbus_RegPool[REG_ENABLEOFF_TIME]=(uint16_t )15;
+	  Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
+	 
     
-    Modbus_RegPool[REG_CURRENT_POS_H] = (uint16_t)(current_pos >> 16);
-    Modbus_RegPool[REG_CURRENT_POS_L] = (uint16_t)(current_pos & 0xFFFF);
-	  Modbus_RegPool[REG_LEFT_LIMIT_H]=(uint16_t )(limit_finder.safe_min_pos>>16);
-	  Modbus_RegPool[REG_LEFT_LIMIT_L]=(uint16_t)(limit_finder.safe_min_pos&0xffff);
-	  Modbus_RegPool[REG_RIGHT_LIMIT_H]=(uint16_t )(limit_finder.safe_max_pos>>16);
-	  Modbus_RegPool[REG_RIGHT_LIMIT_L]=(uint16_t)(limit_finder.safe_max_pos&0xffff);
-	  Modbus_RegPool[REG_GOAL_ACCEL_L]=(uint16_t)(location_tck.up_acc & 0xffff);
-	  Modbus_RegPool[REG_GOAL_ACCEL_H]=(uint16_t)(location_tck.up_acc>>16);
-    
-    // 如果有状态变量，也可以顺便更新
-   // Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
-	   Modbus_RegPool[REG_STATUS_WORD] =final_move_time;
+
 }
