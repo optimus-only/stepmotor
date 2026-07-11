@@ -47,9 +47,9 @@
 //  * @param  NULL
 //  * @retval NULL
 //**/
-//void Control_Config_Init_Static(void)
-//{
-//}
+
+// 额定电流初始化
+uint16_t Current_Rated_Current = 2800;
 
 ///**
 //  * @brief  控制动态配置 

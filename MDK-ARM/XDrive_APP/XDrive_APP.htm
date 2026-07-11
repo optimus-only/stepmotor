@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\XDrive_APP\XDrive_APP.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\XDrive_APP\XDrive_APP.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6110004: Last Updated: Fri Jul 10 16:00:28 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6110004: Last Updated: Sat Jul 11 15:01:41 2026
 <BR><P>
 <H3>Maximum Stack Usage =        160 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -401,8 +401,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Control_DCE_Init
 </UL>
 
-<P><STRONG><a name="[5f]"></a>Control_DCE_To_Electric</STRONG> (Thumb, 284 bytes, Stack size 20 bytes, motor_control.o(.text.Control_DCE_To_Electric))
-<BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = Control_DCE_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
+<P><STRONG><a name="[5f]"></a>Control_DCE_To_Electric</STRONG> (Thumb, 264 bytes, Stack size 16 bytes, motor_control.o(.text.Control_DCE_To_Electric))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = Control_DCE_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
 </UL>
 <BR>[Calls]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;REIN_HW_Elec_SetDivideElec
 </UL>
@@ -431,7 +431,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Control_PID_Init
 </UL>
 
-<P><STRONG><a name="[64]"></a>Control_PID_To_Electric</STRONG> (Thumb, 242 bytes, Stack size 24 bytes, motor_control.o(.text.Control_PID_To_Electric))
+<P><STRONG><a name="[64]"></a>Control_PID_To_Electric</STRONG> (Thumb, 232 bytes, Stack size 24 bytes, motor_control.o(.text.Control_PID_To_Electric))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = Control_PID_To_Electric &rArr; REIN_HW_Elec_SetDivideElec
 </UL>
 <BR>[Calls]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;REIN_HW_Elec_SetDivideElec
@@ -451,7 +451,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Callback
 </UL>
 
-<P><STRONG><a name="[65]"></a>Current_Tracker_Init</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, current_tracker.o(.text.Current_Tracker_Init))
+<P><STRONG><a name="[65]"></a>Current_Tracker_Init</STRONG> (Thumb, 68 bytes, Stack size 8 bytes, current_tracker.o(.text.Current_Tracker_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = Current_Tracker_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Current_Tracker_Set_UpRate
@@ -464,11 +464,11 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Callback
 </UL>
 
-<P><STRONG><a name="[67]"></a>Current_Tracker_Set_DownRate</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, current_tracker.o(.text.Current_Tracker_Set_DownRate))
+<P><STRONG><a name="[67]"></a>Current_Tracker_Set_DownRate</STRONG> (Thumb, 62 bytes, Stack size 0 bytes, current_tracker.o(.text.Current_Tracker_Set_DownRate))
 <BR><BR>[Called By]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Current_Tracker_Init
 </UL>
 
-<P><STRONG><a name="[66]"></a>Current_Tracker_Set_UpRate</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, current_tracker.o(.text.Current_Tracker_Set_UpRate))
+<P><STRONG><a name="[66]"></a>Current_Tracker_Set_UpRate</STRONG> (Thumb, 62 bytes, Stack size 0 bytes, current_tracker.o(.text.Current_Tracker_Set_UpRate))
 <BR><BR>[Called By]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Current_Tracker_Init
 </UL>
 
@@ -1139,7 +1139,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> loop.o(.text.loop)
 </UL>
-<P><STRONG><a name="[110]"></a>Modbus_Update_Feedback</STRONG> (Thumb, 94 bytes, Stack size 0 bytes, modbus_slave.o(.text.Modbus_Update_Feedback))
+<P><STRONG><a name="[110]"></a>Modbus_Update_Feedback</STRONG> (Thumb, 108 bytes, Stack size 0 bytes, modbus_slave.o(.text.Modbus_Update_Feedback))
 <BR><BR>[Called By]<UL><LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
 
@@ -1147,7 +1147,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Callback
 </UL>
 
-<P><STRONG><a name="[d1]"></a>Motor_Control_Callback</STRONG> (Thumb, 982 bytes, Stack size 24 bytes, motor_control.o(.text.Motor_Control_Callback))
+<P><STRONG><a name="[d1]"></a>Motor_Control_Callback</STRONG> (Thumb, 980 bytes, Stack size 24 bytes, motor_control.o(.text.Motor_Control_Callback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = Motor_Control_Callback &rArr; Move_Reconstruct_Capture_Goal &rArr; __aeabi_fmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Clear_Stall
@@ -1214,7 +1214,7 @@ Global Symbols
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Init
 </UL>
 
-<P><STRONG><a name="[7f]"></a>Motor_Control_Write_Goal_Location</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Write_Goal_Location))
+<P><STRONG><a name="[7f]"></a>Motor_Control_Write_Goal_Location</STRONG> (Thumb, 58 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Write_Goal_Location))
 <BR><BR>[Called By]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_CAN_RxFifo0MsgPendingCallback
 <LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_100ms_serve
 </UL>
@@ -1223,7 +1223,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Loop
 </UL>
 
-<P><STRONG><a name="[cc]"></a>Motor_Control_Write_Realstic_Current</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Write_Realstic_Current))
+<P><STRONG><a name="[cc]"></a>Motor_Control_Write_Realstic_Current</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, motor_control.o(.text.Motor_Control_Write_Realstic_Current))
 <BR><BR>[Called By]<UL><LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Modbus_Execute_Action
 </UL>
 
@@ -1672,7 +1672,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;time_second_run
 </UL>
 
-<P><STRONG><a name="[112]"></a>time_second_10ms_serve</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, loop.o(.text.time_second_10ms_serve))
+<P><STRONG><a name="[112]"></a>time_second_10ms_serve</STRONG> (Thumb, 102 bytes, Stack size 0 bytes, loop.o(.text.time_second_10ms_serve))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = time_second_10ms_serve &rArr; Motor_LimitFinder_Loop
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_LimitFinder_Loop
@@ -1883,7 +1883,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Modbus_Receive_Task
 </UL>
 
-<P><STRONG><a name="[cb]"></a>Modbus_Execute_Action</STRONG> (Thumb, 192 bytes, Stack size 8 bytes, modbus_slave.o(.text.Modbus_Execute_Action))
+<P><STRONG><a name="[cb]"></a>Modbus_Execute_Action</STRONG> (Thumb, 200 bytes, Stack size 8 bytes, modbus_slave.o(.text.Modbus_Execute_Action))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Modbus_Execute_Action &rArr; Location_Tracker_Set_DownAcc &rArr; __aeabi_fdiv
 </UL>
 <BR>[Calls]<UL><LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Control_Write_Realstic_Current

@@ -79,6 +79,8 @@ static uint32_t time_second_1s=0;
 //	
 uint32_t start_move_tick = 0;
 uint32_t final_move_time =0;
+uint16_t auto_stop_counter=0;
+bool auto_stop_flag=false;
 bool is_waiting_for_finish = false;
 bool time_ready_to_read = false;
 /* USER CODE BEGIN 自动运行相关变量 */
@@ -98,7 +100,17 @@ void time_second_10ms_serve(void)
         Motor_LimitFinder_Loop(); 
 			return;
     }
+  if(auto_stop_flag)
+	{
+		auto_stop_counter++;
+	 if(auto_stop_counter>=(auto_stop_time/10))
+	 {
+	     motor_control.mode_run = Control_Mode_Stop;
+		  auto_stop_flag=false;
+		  auto_stop_counter=0;
+	 }
 
+	}
     // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
 //    if (is_auto_run) {
 //        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发

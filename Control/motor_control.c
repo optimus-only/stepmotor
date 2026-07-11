@@ -416,6 +416,7 @@ void Motor_Control_SetDefault(void)
 **/
 void Motor_Control_Write_Goal_Location(int32_t value)
 {
+	auto_stop_flag=false;
 	motor_control.goal_location = value;
 	if(limit_finder.state==LIMIT_FIND_DONE)
 	{  if(limit_finder.safe_max_pos<= value)
@@ -668,11 +669,10 @@ void Motor_LimitFinder_Loop(void)
 void Motor_Control_Write_Realstic_Current(uint16_t value)
 {
 
-   if(value<2800)
+   if(value>=100&&value<=2800)
 	 {
-//	   Current_Rated_Current=value;
+	   Current_Rated_Current=value;
 	 }
-
 
 }
 /**
@@ -938,7 +938,10 @@ void Motor_Control_Callback(void)
 		if(motor_control.mode_run == Motor_Mode_Digital_Location){
 			if( (motor_control.soft_location == motor_control.goal_location)
 			 && (motor_control.soft_speed == 0))
-				motor_control.state = Control_State_Finish;		//软硬目标匹配
+			{motor_control.state = Control_State_Finish;		//软硬目标匹配
+				auto_stop_flag=true;
+			}
+				
 			else
 				motor_control.state = Control_State_Running;
 		}

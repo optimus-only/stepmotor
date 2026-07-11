@@ -2,7 +2,7 @@
 #define __MODBUS_SLAVE_H
 
 #include "stdint.h"
-
+extern uint16_t auto_stop_time;
 // Modbus 从机设备地址
 #define MODBUS_SLAVE_ADDRESS  0x08
 

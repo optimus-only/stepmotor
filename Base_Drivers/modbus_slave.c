@@ -7,7 +7,7 @@
 #include "Location_Tracker.h"
 extern void Motor_Control_Write_Goal_Speed(int32_t speed);
 extern void Motor_LimitFinder_Start(void);
-
+uint16_t auto_stop_time=10;
 
 // 定义一个虚拟的寄存器池，用于存放断电不保存的数据缓存
 uint16_t Modbus_RegPool[MODBUS_REG_NUM] = {0};
@@ -42,27 +42,14 @@ static int32_t Combine_To_Int32(uint16_t high_word, uint16_t low_word)
     return (int32_t)(((uint32_t)high_word << 16) | low_word);
 }
 
-// 处理具体的数据下发动作 (核心桥接代码)
+// 处理具体的数据下发动作 
 static void Modbus_Execute_Action(uint16_t reg_addr)
 {
     int32_t val32;
     switch(reg_addr)
     {
-        case REG_GOAL_CURRENT:
-           val32=Modbus_RegPool[REG_GOAL_CURRENT];
-			    	Motor_Control_Write_Realstic_Current(val32);
-            break;
-            
-        case REG_GOAL_ACCEL:
-            val32 = Modbus_RegPool[REG_GOAL_ACCEL]*Move_Pulse_NUM;
-				    if(val32<Move_Rated_UpAcc)
-						{
-							Location_Tracker_Set_UpAcc(val32);
-				      Location_Tracker_Set_DownAcc(val32);
-						} 
-            break;
-            
-        case REG_GOAL_INTERVAL :  
+			
+			 case REG_GOAL_INTERVAL :  
 //            val32=Modbus_RegPool[REG_GOAL_INTERVAL];					
 				    val32=(limit_finder.min_pos_raw+limit_finder.max_pos_raw-Modbus_RegPool[REG_GOAL_INTERVAL])/2;
 				    if(val32>(limit_finder.min_pos_raw + LIMIT_BACKOFF_DIST))
@@ -72,6 +59,22 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
 				    if(val32<(limit_finder.max_pos_raw - LIMIT_BACKOFF_DIST))
 						{limit_finder.safe_max_pos = val32; }
             break;
+       
+        case REG_GOAL_ACCEL:
+            val32 = Modbus_RegPool[REG_GOAL_ACCEL]*Move_Pulse_NUM;
+				    if(val32<Move_Rated_UpAcc)
+						{
+							Location_Tracker_Set_UpAcc(val32);
+				      Location_Tracker_Set_DownAcc(val32);
+						} 
+            break;
+						
+        case REG_GOAL_CURRENT:
+           val32=Modbus_RegPool[REG_GOAL_CURRENT];
+			    	Motor_Control_Write_Realstic_Current(val32);
+            break;
+            
+        
             
         case REG_GOAL_SPEED :
             val32=Modbus_RegPool[REG_GOAL_SPEED]*Move_Pulse_NUM;
@@ -82,7 +85,8 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
 //            
 //            break;
 				case REG_ENABLEOFF_TIME:
-					   motor_control.mode_run = Control_Mode_Stop;
+					   auto_stop_time=Modbus_RegPool[REG_ENABLEOFF_TIME];
+					 
 				    break;
     }
 }
@@ -107,7 +111,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
 
     switch (function_code)
     {
-        case 0x03: // 读保持寄存器
+        case 0x03: 
         {
             uint16_t read_cnt = (rx_data[4] << 8) | rx_data[5];
             if (start_addr + read_cnt > MODBUS_REG_NUM) return; // 越界
@@ -124,7 +128,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
             }
             break;
         }
-        case 0x06: // 写单个寄存器 (适合写控制字)
+        case 0x06:
         {
             uint16_t write_val = (rx_data[4] << 8) | rx_data[5];
             if (start_addr >= MODBUS_REG_NUM) return;
@@ -137,7 +141,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
             tx_len = 6;
             break;
         }
-        case 0x10: // 写多个寄存器 (必须支持，因为 32位数据要连写两个寄存器)
+        case 0x10: // 写多个寄存器 
         {
             uint16_t write_cnt = (rx_data[4] << 8) | rx_data[5];
             uint8_t byte_cnt = rx_data[6];
@@ -169,7 +173,7 @@ void Modbus_Receive_Task(uint8_t *rx_data, uint16_t rx_len)
         Modbus_TxBuf[tx_len++] = crc_send & 0xFF; // 低位在前
         Modbus_TxBuf[tx_len++] = (crc_send >> 8) & 0xFF; // 高位在后
         
-        // 调用底层串口发送函数
+        // 调用串口发送函数
         Modbus_Hardware_Transmit(Modbus_TxBuf, tx_len);
     }
 }
@@ -189,7 +193,7 @@ void Modbus_Update_Feedback(void)
 	  Modbus_RegPool[REG_GOAL_ACCEL]=(uint16_t)(location_tck.up_acc/Move_Pulse_NUM);
 	  Modbus_RegPool[REG_GOAL_CURRENT]=(uint16_t) Current_Rated_Current;
 	  Modbus_RegPool[REG_GOAL_SPEED]=(uint16_t)(location_tck.max_speed/Move_Pulse_NUM);
-	  Modbus_RegPool[REG_ENABLEOFF_TIME]=(uint16_t )15;
+	  Modbus_RegPool[REG_ENABLEOFF_TIME]= auto_stop_time;
 	  Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
 	 
     
