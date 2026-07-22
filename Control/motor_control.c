@@ -765,9 +765,9 @@ void Motor_Control_Callback(void)
 			case Motor_Mode_Digital_Current:	Control_Cur_To_Electric(motor_control.soft_current);																	break;
 			case Motor_Mode_Digital_Track:		Control_DCE_To_Electric(motor_control.soft_location, motor_control.soft_speed);				break;
 			//MoreIO(PWM/PUL)
-			case Motor_Mode_PWM_Location:			Control_DCE_To_Electric(motor_control.soft_location, motor_control.soft_speed);				break;
-			case Motor_Mode_PWM_Speed:				Control_PID_To_Electric(motor_control.soft_speed);																		break;
-			case Motor_Mode_PWM_Current:			Control_Cur_To_Electric(motor_control.soft_current);																	break;
+//			case Motor_Mode_PWM_Location:			Control_DCE_To_Electric(motor_control.soft_location, motor_control.soft_speed);				break;
+//			case Motor_Mode_PWM_Speed:				Control_PID_To_Electric(motor_control.soft_speed);																		break;
+//			case Motor_Mode_PWM_Current:			Control_Cur_To_Electric(motor_control.soft_current);																	break;
 			case Motor_Mode_PULSE_Location:		Control_DCE_To_Electric(motor_control.soft_location, motor_control.soft_speed);				break;
 			//其他非法模式
 			default:	break;
@@ -791,13 +791,16 @@ void Motor_Control_Callback(void)
 		case Motor_Mode_Digital_Current:	/*硬目标已由通讯任务推入*/	break;
 		case Motor_Mode_Digital_Track:		/*硬目标已由通讯任务推入*/	break;
 		//MoreIO(PWM/PUL)
-		case Motor_Mode_PWM_Location:
-		case Motor_Mode_PWM_Speed:
-		case Motor_Mode_PWM_Current:
-			
-		break;
+//		case Motor_Mode_PWM_Location:
+//		case Motor_Mode_PWM_Speed:
+//		case Motor_Mode_PWM_Current:
+//			
+//		break;
 		case Motor_Mode_PULSE_Location:			
-			
+			Signal_MoreIO_Capture_Goal();	//MoreIO接口获取数据
+			motor_control.goal_location	+= signal_moreio.goal_location;	//提取目标位置(Count模式借用目标位置存放目标位置增量)
+			motor_control.goal_disable	= signal_moreio.goal_disable;		//提取目标失能
+			motor_control.goal_brake		= signal_moreio.goal_brake;			//提取目标刹车
 		break;
 			//其他非法模式
 		default:	break;
@@ -836,9 +839,9 @@ void Motor_Control_Callback(void)
 			case Motor_Mode_Digital_Current:	Current_Tracker_NewTask(	motor_control.foc_current);														break;
 			case Motor_Mode_Digital_Track:		Move_Reconstruct_NewTask(	motor_control.est_location,	motor_control.est_speed);	break;
 			//MoreIO(PWM/PUL)
-			case Motor_Mode_PWM_Location:			Location_Tracker_NewTask(	motor_control.est_location,	motor_control.est_speed);	break;
-			case Motor_Mode_PWM_Speed:				Speed_Tracker_NewTask(		motor_control.est_speed);															break;
-			case Motor_Mode_PWM_Current:			Current_Tracker_NewTask(	motor_control.foc_current);														break;
+//			case Motor_Mode_PWM_Location:			Location_Tracker_NewTask(	motor_control.est_location,	motor_control.est_speed);	break;
+//			case Motor_Mode_PWM_Speed:				Speed_Tracker_NewTask(		motor_control.est_speed);															break;
+//			case Motor_Mode_PWM_Current:			Current_Tracker_NewTask(	motor_control.foc_current);														break;
 			case Motor_Mode_PULSE_Location:		Location_Interp_NewTask(	motor_control.est_location,	motor_control.est_speed);
 											/** 脉冲位置获取相对值,需要初始化 **/	motor_control.goal_location = motor_control.est_location;		break;
 			//其他非法模式
@@ -871,16 +874,16 @@ void Motor_Control_Callback(void)
 																			motor_control.soft_speed    = move_reco.go_speed;
 																			break;
 		//MoreIO(PWM/PUL)
-		case Motor_Mode_PWM_Location:			Location_Tracker_Capture_Goal(motor_control.goal_location);
-																			motor_control.soft_location = location_tck.go_location;
-																			motor_control.soft_speed    = location_tck.go_speed;
-																			break;			
-		case Motor_Mode_PWM_Speed:				Speed_Tracker_Capture_Goal(motor_control.goal_speed);
-																			motor_control.soft_speed    = speed_tck.go_speed;
-																			break;
-		case Motor_Mode_PWM_Current:			Current_Tracker_Capture_Goal(motor_control.goal_current);
-																			motor_control.soft_current  = current_tck.go_current;
-																			break;
+//		case Motor_Mode_PWM_Location:			Location_Tracker_Capture_Goal(motor_control.goal_location);
+//																			motor_control.soft_location = location_tck.go_location;
+//																			motor_control.soft_speed    = location_tck.go_speed;
+//																			break;			
+//		case Motor_Mode_PWM_Speed:				Speed_Tracker_Capture_Goal(motor_control.goal_speed);
+//																			motor_control.soft_speed    = speed_tck.go_speed;
+//																			break;
+//		case Motor_Mode_PWM_Current:			Current_Tracker_Capture_Goal(motor_control.goal_current);
+//																			motor_control.soft_current  = current_tck.go_current;
+//																			break;
 		case Motor_Mode_PULSE_Location:		Location_Interp_Capture_Goal(motor_control.goal_location);
 																			motor_control.soft_location = location_interp.go_location;
 																			motor_control.soft_speed    = location_interp.go_speed;

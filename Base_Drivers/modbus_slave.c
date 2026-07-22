@@ -7,13 +7,9 @@
 #include "Location_Tracker.h"
 extern void Motor_Control_Write_Goal_Speed(int32_t speed);
 extern void Motor_LimitFinder_Start(void);
-uint16_t auto_stop_time=10;
-
-// 定义一个虚拟的寄存器池，用于存放断电不保存的数据缓存
+uint16_t auto_stop_time=100;
 uint16_t Modbus_RegPool[MODBUS_REG_NUM] = {0};
-
 uint8_t Modbus_TxBuf[MODBUS_TX_BUF_SIZE];
-
 uint8_t Debug_Error_Frame[16]; 
 uint16_t Debug_Error_Len = 0;
 
@@ -195,7 +191,7 @@ void Modbus_Update_Feedback(void)
 	  Modbus_RegPool[REG_GOAL_SPEED]=(uint16_t)(location_tck.max_speed/Move_Pulse_NUM);
 	  Modbus_RegPool[REG_ENABLEOFF_TIME]= auto_stop_time;
 	  Modbus_RegPool[REG_STATUS_WORD] = motor_control.state;
-	 
-    
+	  Modbus_RegPool[REG_MOTOR_LOCATION_L]=(uint16_t)(((uint32_t) motor_control.real_location)&0xffff); 
+    Modbus_RegPool[REG_MOTOR_LOCATION_H]=(uint16_t)(((uint32_t)motor_control.real_location) >> 16);
 
 }

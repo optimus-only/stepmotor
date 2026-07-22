@@ -4,7 +4,7 @@
 #include "stdint.h"
 extern uint16_t auto_stop_time;
 // Modbus 从机设备地址
-#define MODBUS_SLAVE_ADDRESS  0x08
+#define MODBUS_SLAVE_ADDRESS  0x0f
 
 // Modbus 发送缓冲区大小
 #define MODBUS_TX_BUF_SIZE    128
@@ -17,9 +17,10 @@ extern uint16_t auto_stop_time;
 #define REG_GOAL_SPEED        0x0003  //目标速度      最大速度50r/s
 #define REG_ENABLEOFF_TIME    0x0004  //使能关闭时间
 #define REG_STATUS_WORD       0x0005 // 状态字 (只读，反馈电机状态)   0x00,停止 ；0x01,任务完成 ；0x02,任务执行中 ；0x03,过载  ；0x04,	堵转
-
-// 寄存器总数量 (0x0000 ~ 0x000c 共6)
-#define MODBUS_REG_NUM        6
+#define REG_MOTOR_LOCATION_H    0x0006
+#define REG_MOTOR_LOCATION_L    0x0007
+// 寄存器总数量 (0x0000 ~ 0x0006 共7)
+#define MODBUS_REG_NUM        8
 
 // 供底层调用的 API
 void Modbus_Init(void);

@@ -323,7 +323,7 @@ void loop(void)
 
   motor_control.mode_run = Control_Mode_Stop	;
 	 motor_control.stall_flag = false;
-  //encode_cali.trigger = true;			//触发校准
+  encode_cali.trigger = true;			//触发校准
 	Location_Tracker_Set_Default();
 	Location_Tracker_Init();
 //	Set_Safe_Baseline();
