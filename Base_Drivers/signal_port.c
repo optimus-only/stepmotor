@@ -249,10 +249,10 @@ void Signal_Count_Capture_Goal(void)
 	//读取En_Pin
 	if(SIGNAL_COUNT_READ_ENA_IO()){
 		if(sg_cut.en_inve)	sg_cut.en_valid = true;
-		else								sg_cut.en_valid = false;
+		else								sg_cut.en_valid = true;  //default false
 	}
 	else{
-		if(sg_cut.en_inve)	sg_cut.en_valid = false;
+		if(sg_cut.en_inve)	sg_cut.en_valid = true;  //defaul false
 		else								sg_cut.en_valid = true;
 	}
 
@@ -673,7 +673,7 @@ void Signal_MoreIO_Init(void)
 	
 	//MoreIO不同模式的参数初始化
 	Signal_Count_Init();		//Signal_Count采集初始化
-	Signal_PWM_Init();			//Signal_PWM采集初始化
+	//Signal_PWM_Init();			//Signal_PWM采集初始化
 }
 
 /**

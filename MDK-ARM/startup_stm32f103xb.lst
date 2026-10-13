@@ -462,10 +462,10 @@ ARM Macro Assembler    Page 8
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --depend=.\xd
 rive_app\startup_stm32f103xb.d -o.\xdrive_app\startup_stm32f103xb.o -I.\RTE\_XD
-rive_APP -IE:\Keil5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include -IE:\Keil5\ARM\
-PACK\Keil\STM32F1xx_DFP\2.0.0\Device\Include --predefine="__MICROLIB SETA 1" --
-predefine="__UVISION_VERSION SETA 527" --predefine="_RTE_ SETA 1" --predefine="
-STM32F10X_MD SETA 1" --list=startup_stm32f103xb.lst startup_stm32f103xb.s
+rive_APP -IE:\Keil5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\Include -IE:\Keil5
+\ARM\CMSIS\Include --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSI
+ON SETA 527" --predefine="STM32F10X_MD SETA 1" --list=startup_stm32f103xb.lst s
+tartup_stm32f103xb.s
 
 
 
@@ -1171,4 +1171,4 @@ Symbol: __main
       At line 135 in file startup_stm32f103xb.s
 Comment: __main used once
 2 symbols
-406 symbols in table
+405 symbols in table

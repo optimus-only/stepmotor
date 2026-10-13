@@ -19,8 +19,9 @@ extern uint16_t auto_stop_time;
 #define REG_STATUS_WORD       0x0005 // 状态字 (只读，反馈电机状态)   0x00,停止 ；0x01,任务完成 ；0x02,任务执行中 ；0x03,过载  ；0x04,	堵转
 #define REG_MOTOR_LOCATION_H    0x0006
 #define REG_MOTOR_LOCATION_L    0x0007
+#define REG_GOAL_LACTION        0x0008
 // 寄存器总数量 (0x0000 ~ 0x0006 共7)
-#define MODBUS_REG_NUM        8
+#define MODBUS_REG_NUM        9
 
 // 供底层调用的 API
 void Modbus_Init(void);

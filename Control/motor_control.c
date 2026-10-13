@@ -773,7 +773,32 @@ void Motor_Control_Callback(void)
 			default:	break;
 		}
 	}
-
+	/************************************ 模式变更 ************************************/
+	/************************************ 模式变更 ************************************/
+	//变更
+	if(motor_control.mode_run != motor_control.mode_order)
+	{
+		motor_control.mode_run = motor_control.mode_order;
+		switch(motor_control.mode_run){
+			//测试
+			case Motor_Mode_Debug_Location:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			case Motor_Mode_Debug_Speed:			Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			//停止
+			case Control_Mode_Stop:						Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			//DIG(CAN/RS485)
+			case Motor_Mode_Digital_Location:	Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			case Motor_Mode_Digital_Speed:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			case Motor_Mode_Digital_Current:	Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			case Motor_Mode_Digital_Track:		Signal_MoreIO_Config(MoreIO_Mode_Disable);					motor_control.soft_new_curve = true;	break;
+			//MoreIO(PWM/PUL)
+//			case Motor_Mode_PWM_Location:			Signal_MoreIO_Config(MoreIO_Mode_PWM_Location);			motor_control.soft_new_curve = true;	break;
+//			case Motor_Mode_PWM_Speed:				Signal_MoreIO_Config(MoreIO_Mode_PWM_Speed);				motor_control.soft_new_curve = true;	break;
+//			case Motor_Mode_PWM_Current:			Signal_MoreIO_Config(MoreIO_Mode_PWM_Current);			motor_control.soft_new_curve = true;	break;
+			case Motor_Mode_PULSE_Location:		Signal_MoreIO_Config(MoreIO_Mode_PULSE_Locatioon);	motor_control.soft_new_curve = true;	break;
+			//其他非法模式
+			default:	break;
+		}
+	}
 
 
 	/************************************ 硬目标提取 ************************************/

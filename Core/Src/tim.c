@@ -271,9 +271,9 @@ void REIN_TIM_SIGNAL_COUNT_Init(void)
     Error_Handler();
   }
   sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;						//外部时钟模式
-  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;									//TI1FP1
-  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;	//上升沿触发
-  sSlaveConfig.TriggerFilter = 4;															//滤波参数(FDIV2_N6)
+  sSlaveConfig.InputTrigger = TIM_TS_TI2FP2;									//TI2FP2
+  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;	//上升沿触发
+  sSlaveConfig.TriggerFilter = 0;															//滤波参数(FDIV2_N6)  默认4
   if (HAL_TIM_SlaveConfigSynchro(&SIGNAL_COUNT_Get_HTIM, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();

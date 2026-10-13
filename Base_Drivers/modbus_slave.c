@@ -84,6 +84,13 @@ static void Modbus_Execute_Action(uint16_t reg_addr)
 					   auto_stop_time=Modbus_RegPool[REG_ENABLEOFF_TIME];
 					 
 				    break;
+				case REG_GOAL_LACTION:
+					    val32=Modbus_RegPool[REG_GOAL_LACTION];
+				      if(val32==0)
+							{Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);}  
+							else if(val32==1)
+							{Motor_Control_Write_Goal_Location(limit_finder.safe_max_pos);}
+					   break;
     }
 }
 

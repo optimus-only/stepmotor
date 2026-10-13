@@ -173,9 +173,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
                 
                 int32_t goal_pos = (int32_t)(rxData[0] | (rxData[1] << 8) | (rxData[2] << 16) | (rxData[3] << 24)); 
                 Motor_Control_Clear_Stall();
-                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-                Motor_Control_Write_Goal_Location(goal_pos);
-							  motor_control.mode_run = Motor_Mode_Digital_Location	;
+//                Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//                Motor_Control_Write_Goal_Location(goal_pos);
+//							  motor_control.mode_run = Motor_Mode_Digital_Location	;
 							
 							
                 motor_control.state = Control_State_Running; 
@@ -196,16 +196,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 
             case 0x12: 
             {
-                if(rxData[0] == 0) 
-                {
-                    Motor_Control_SetMotorMode(Control_Mode_Stop);
-                }
-                else if(rxData[0] == 1) 
-                {
-                    
-                    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
-                    Motor_Control_Write_Goal_Location(motor_control.real_location);
-                }
+//                if(rxData[0] == 0) 
+//                {
+//                    Motor_Control_SetMotorMode(Control_Mode_Stop);
+//                }
+//                else if(rxData[0] == 1) 
+//                {
+//                    
+//                    Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+//                    Motor_Control_Write_Goal_Location(motor_control.real_location);
+//                }
                 break;
             }
             

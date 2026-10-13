@@ -53,7 +53,7 @@
 #include "hw_elec.h"
 #include "dma.h"
 ////Control
-//#include "signal_port.h"
+#include "signal_port.h"
 #include "motor_control.h"
 #include "encode_cali.h"
 //Debug
@@ -100,21 +100,21 @@ void time_second_10ms_serve(void)
         Motor_LimitFinder_Loop(); 
 			return;
     }
-  if(auto_stop_flag)
-	{
-		auto_stop_counter++;
-	 if(auto_stop_counter>=(auto_stop_time/10))
-	 {
-	     motor_control.mode_run = Control_Mode_Stop;
-		  auto_stop_flag=false;
-		  auto_stop_counter=0;
-	 }
+//  if(auto_stop_flag)
+//	{
+//		auto_stop_counter++;
+//	 if(auto_stop_counter>=(auto_stop_time/5))
+//	 {
+//	     motor_control.mode_run = Control_Mode_Stop;
+//		  auto_stop_flag=false;
+//		  auto_stop_counter=0;
+//	 }
 
-	}
+//	}
     // --- 自动往复运行时间控制逻辑 (150ms 切换一次) ---
 //    if (is_auto_run) {
 //        // 利用 HAL_GetTick() 测算时间差，达到 150ms 时触发
-//        if (HAL_GetTick() - last_auto_run_tick >=20) {
+//        if (HAL_GetTick() - last_auto_run_tick >=30) {
 //					
 //            last_auto_run_tick = HAL_GetTick(); // 更新计时器
 //            Motor_Control_Clear_Stall();
@@ -151,7 +151,7 @@ void time_second_20ms_serve(void)
 */
 void time_second_50ms_serve(void)
 {
-    
+    Modbus_Update_Feedback();
 }
 
 /**
@@ -177,13 +177,17 @@ void time_second_100ms_serve(void)
         // 情况 1: 如果还未完成寻找极限 -> 启动寻找极限
         if (limit_finder.state != LIMIT_FIND_DONE) 
         {
-            Motor_LimitFinder_Start();
+           Motor_LimitFinder_Start();
+					Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+         motor_control.mode_run = Motor_Mode_Digital_Location	;
+					 Motor_Control_Clear_Stall();
         }
         // 情况 2: 如果已经完成极限寻找 -> 在两个极限间来回切换
         else 
         {
             Motor_Control_Clear_Stall();
-            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+            Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);       
+					  motor_control.mode_run = Motor_Mode_Digital_Location;
             
             if (target_is_max) {
                 // 如果目标是 Max，则发送前往 Max 的指令
@@ -192,11 +196,10 @@ void time_second_100ms_serve(void)
                 // 如果目标是 Min，则发送前往 Min 的指令
                 Motor_Control_Write_Goal_Location(limit_finder.safe_min_pos);
             }
-            
-            motor_control.mode_run = Motor_Mode_Digital_Location;
-            
-            // 翻转标志位，为了下一次按下时能走向相反的方向
-            target_is_max = !target_is_max; 
+                    
+           target_is_max = !target_is_max;  // 翻转标志位，为了下一次按下时能走向相反的方向
+					
+					
 //					if(is_auto_run)
 //					{
 //					   is_auto_run=0;
@@ -245,7 +248,7 @@ void loop_second_base_1ms(void)
 	time_second_1ms++;
 	
 	// --------- 增加部分: 检查到位逻辑 ---------
-//    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)) {
+//    if(is_waiting_for_finish && (motor_control.state == Control_State_Finish)&&is_auto_run) {
 //        final_move_time = HAL_GetTick() - start_move_tick; // 计算出耗时(ms)
 //        is_waiting_for_finish = false;                     // 关闭等待
 //        time_ready_to_read = true;                         // 标记时间已经准备好可以被读取
@@ -303,6 +306,29 @@ void loop(void)
 	Calibration_Init();		//校准器初始化
 	Motor_Control_Init();	//电机控制初始化
 	
+	
+	// 信号接口初始化（加载默认参数：细分=16，EN不翻转，DIR不翻转）
+	//Signal_MoreIO_Init();
+	
+	// 使能信号配置（硬件未接EN引脚，ENA已配置下拉电阻 → PB0常低 → en_valid恒为true）
+//	// en_inve=false：低电平有效，与下拉配合使驱动器始终处于使能状态
+//	Signal_Count_SetEnInve(false);
+//	
+//	// 方向信号配置（硬件未接DIR引脚，DIR已配置下拉电阻 → PA7常低 → TIM3向上计数）
+//	// dir_inve=false：低电平=正向计数（脉冲增量为正）
+//	// 如需反转运动方向，将此处改为 Signal_Count_SetDirInve(true)
+//	Signal_Count_SetDirInve(false);
+//	
+	// 切换MoreIO接口为脉冲位置模式（配置PA6/TIM3为编码器计数，PA7/EXTI为方向中断）
+//	Signal_MoreIO_Config(MoreIO_Mode_PULSE_Locatioon);
+//	Motor_Control_SetMotorMode(Motor_Mode_PULSE_Location);
+//  motor_control.mode_run = Motor_Mode_PULSE_Location	;
+
+
+	  Motor_Control_SetMotorMode(Motor_Mode_Digital_Location);
+    //motor_control.mode_run = Motor_Mode_Digital_Location	;
+
+
 //	MX_CAN_Init();// can通信初始化
 //	HAL_CAN_MspInit(&hcan);//can引脚remap PB8 PB9
 //  CAN_FilterInit();
@@ -322,11 +348,11 @@ void loop(void)
 //  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 使能FIFO0消息挂起中断
 
   motor_control.mode_run = Control_Mode_Stop	;
-	 motor_control.stall_flag = false;
-  encode_cali.trigger = true;			//触发校准
-	Location_Tracker_Set_Default();
-	Location_Tracker_Init();
-//	Set_Safe_Baseline();
+	 //motor_control.stall_flag = false;
+  // encode_cali.trigger = true;			//触发校准
+	//Location_Tracker_Set_Default();
+	//Location_Tracker_Init();
+	
 
 	//FOR Circulation
 	for(;;)

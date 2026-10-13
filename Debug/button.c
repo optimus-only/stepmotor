@@ -43,8 +43,8 @@
 #include "button.h"
 
 //GPIO输入
-#define	Read_Button_OK_IO()			(BUTTON_OK_GPIO_Port   -> IDR & BUTTON_OK_Pin)
-#define	Read_Button_UP_IO()			(BUTTON_UP_GPIO_Port   -> IDR & BUTTON_UP_Pin)
+//#define	Read_Button_OK_IO()			(BUTTON_OK_GPIO_Port   -> IDR & BUTTON_OK_Pin)
+//#define	Read_Button_UP_IO()			(BUTTON_UP_GPIO_Port   -> IDR & BUTTON_UP_Pin)
 #define	Read_Button_DOWN_IO()		(BUTTON_DOWN_GPIO_Port -> IDR & BUTTON_DOWN_Pin)
 
 //定义按键实例
